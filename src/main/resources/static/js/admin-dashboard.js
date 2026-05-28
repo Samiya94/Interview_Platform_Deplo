@@ -229,9 +229,12 @@ async function loadRecentActivity() {
 function resolveFileUrl(url) {
     try {
         if (!url || url === 'null' || url === 'undefined') return '';
-        const u = String(url).trim();
+        let u = String(url).trim();
         if (!u) return '';
-        if (u.startsWith('/') || u.startsWith('http')) return u;
+        if (u.startsWith('http://') || u.startsWith('https://')) return u;
+        if (u.startsWith('/uploads/')) return u;
+        if (u.startsWith('uploads/')) return '/' + u;
+        if (u.startsWith('/')) return u;
         return '/uploads/' + u;
     } catch (e) {
         return '';
@@ -1342,10 +1345,16 @@ function syncInterviewerCards() {
         const status = row.getAttribute('data-status') || 'active';
         const isActive = status === 'active';
         const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2);
+        const profilePhotoUrl = row.getAttribute('data-profilephoto') || '';
         const card = document.createElement('div');
         card.className = 'int-card';
+        
+        const avatarHtml = profilePhotoUrl 
+            ? `<img src="${profilePhotoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+            : initials;
+
         card.innerHTML = `
-            <div class="int-card-avatar" style="background:${isActive ? '#EFF6FF' : '#FEE2E2'};color:${isActive ? 'var(--primary)' : '#991B1B'};">${initials}</div>
+            <div class="int-card-avatar" style="background:${isActive ? '#EFF6FF' : '#FEE2E2'};color:${isActive ? 'var(--primary)' : '#991B1B'};overflow:hidden;">${avatarHtml}</div>
             <h4>${name}</h4>
             <p>${domain} · ${loc}</p>
             <div style="margin-top:8px;display:flex;align-items:center;gap:6px;">
