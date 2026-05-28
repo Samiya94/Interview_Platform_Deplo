@@ -3,6 +3,7 @@ package com.interviewPlatform.entities;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.interviewPlatform.enums.Role;
 import com.interviewPlatform.enums.Status;
 
@@ -38,7 +39,9 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
+
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -52,6 +55,18 @@ public class User {
     @OneToOne(mappedBy = "user")
     @JsonBackReference
     private Institute institute;
+
+    @OneToOne(mappedBy = "user")
+    @JsonIgnore
+    private Student student;
+
+    @OneToOne(mappedBy = "user")
+    @JsonIgnore
+    private Mentor mentor;
+
+    @OneToOne(mappedBy = "user")
+    @JsonIgnore
+    private Interviewer interviewer;
 
     @PrePersist
     protected void onCreate() {

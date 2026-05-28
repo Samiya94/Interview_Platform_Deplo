@@ -2,7 +2,8 @@ package com.interviewPlatform.services.Impl;
 
 import java.time.LocalDateTime;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.interviewPlatform.dtos.request.InstituteRegisterRequest;
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class InstituteServiceImpl implements InstituteService {
     private final UserRepository userRepository;
     private final InstituteRepository instituteRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -128,6 +129,30 @@ public boolean validateRegistrationToken(Long instituteId, String token) {
     @Override
     public Institute getInstituteByEmail(String email) {
         return instituteRepository.findByUserEmail(email).orElseThrow(()-> new RuntimeException("Institute Not Found"));
+    }
+
+    @Override
+    public String getStudentRegistrationLink(Long instituteId, Long deptId) {
+        Institute institute = instituteRepository.findById(instituteId)
+        .orElseThrow(() -> new RuntimeException("Institute not found"));
+
+    // Reuse the same token that already exists on the institute
+    // (created when mentor link was generated)
+    // If no token exists yet, create one now
+    if (institute.getRegistrationToken() == null) {
+        String token = "REG-" + java.util.UUID.randomUUID()
+                .toString()
+                .substring(0, 8)
+                .toUpperCase();
+        institute.setRegistrationToken(token);
+        institute.setTokenCreatedAt(java.time.LocalDateTime.now());
+        instituteRepository.save(institute);
+    }
+
+    return "http://localhost:8080/register/student"
+            + "?instituteId=" + instituteId
+            + "&dept=" + deptId
+            + "&token=" + institute.getRegistrationToken();
     }
 
 }

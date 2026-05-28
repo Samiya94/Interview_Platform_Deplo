@@ -3,7 +3,8 @@ package com.interviewPlatform.services.Impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.interviewPlatform.dtos.request.MentorRegisterRequest;
@@ -33,7 +34,7 @@ public class MentorServiceImpl implements MentorService {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final InstituteService instituteService;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override

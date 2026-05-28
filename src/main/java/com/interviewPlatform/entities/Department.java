@@ -11,12 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity(name = "departments")
+@Entity
+@Table(name = "departments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,9 +37,8 @@ public class Department {
     @JsonIgnore
     private Institute institute;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tpo_id", unique = true,nullable = true)
-    private User mentor;
+    @OneToOne(mappedBy = "department",fetch = FetchType.LAZY)
+    private Mentor mentor;
 
 
 }

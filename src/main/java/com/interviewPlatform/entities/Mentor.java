@@ -1,7 +1,7 @@
 package com.interviewPlatform.entities;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;           
@@ -29,6 +29,11 @@ public class Mentor {
     private String firstName;
     private String lastName;
     private String phone;
+
+    @ElementCollection
+    @CollectionTable(name = "mentor_skills", joinColumns = @JoinColumn(name = "mentor_id"))
+    @Column(name = "skill")
+    private List<String> skills;
 
     private String designation;
     @OneToOne

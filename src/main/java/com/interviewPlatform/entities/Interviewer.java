@@ -56,8 +56,15 @@ public class Interviewer {
     private String bio;
 
     private String profilePhotoUrl;
+    private String resumeUrl;
 
     private LocalDateTime createdAt;
+
+    @jakarta.persistence.Transient
+    private int interviewsConducted;
+
+    @jakarta.persistence.Transient
+    private double averageRating;
 
     @PrePersist
     protected void onCreate(){

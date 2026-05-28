@@ -10,7 +10,9 @@ const TPO_KEY   = 'tpoCoordinators_' + instId;
 /* ── LOAD INSTITUTE INFO ── */
 async function loadInstituteInfo() {
   try {
-    const res = await fetch(`http://localhost:8080/api/institutes/${instId}`);
+    const token = localStorage.getItem("accessToken");
+
+    const res = await fetch(`/api/institutes/${instId}/public`);
 
     if (!res.ok) throw new Error("Failed to fetch institute");
 
@@ -43,7 +45,7 @@ async function loadDepartments() {
   const notice = document.getElementById('noDeptNotice');
 
   try {
-    const res = await fetch(`http://localhost:8080/departments/institute/${instId}`);
+    const res = await fetch(`/departments/institute/${instId}`);
 
     if (!res.ok) throw new Error("Failed");
 
@@ -111,7 +113,7 @@ function checkStrength() {
   const fill = document.getElementById('strengthFill');
   const txt  = document.getElementById('strengthText');
   let score  = 0;
-  if (val.length >= 8)         score++;
+  if (val.length >= 6)         score++;
   if (/[A-Z]/.test(val))      score++;
   if (/[0-9]/.test(val))      score++;
   if (/[^A-Za-z0-9]/.test(val)) score++;
@@ -160,8 +162,8 @@ async function handleSubmit(e) {
   const confirm     = document.getElementById('regConfirm').value;
   const terms       = document.getElementById('terms').checked;
 
-  if (password.length < 8) {
-  return showError("Password must be at least 8 characters");
+  if (password.length < 6) {
+  return showError("Password must be at least 6 characters");
 }
 
 if (password !== confirm) {
@@ -175,7 +177,7 @@ if (password !== confirm) {
   valid = validateField('phone',       phone.length >= 10)                && valid;
   valid = validateField('deptSelect',  deptId !== '')                   && valid;
   valid = validateField('designation', designation !== '')                && valid;
-  valid = validateField('regPassword', password.length >= 8)              && valid;
+  valid = validateField('regPassword', password.length >= 6)              && valid;
   valid = validateField('regConfirm',  password === confirm)              && valid;
 
   if (!valid) { showError('Please fill in all required fields correctly.'); return; }
@@ -195,9 +197,17 @@ if (password !== confirm) {
     token: regToken
   };
 
+  const submitBtn = document.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering...';
+  }
+
 try {
   console.log("Payload:", payload);
-    const res = await fetch(`http://localhost:8080/register/mentor?token=${regToken}`, {
+  // await fetch(`/register/mentor?token=${regToken}`
+    const res = await fetch(`/register/mentor`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -218,7 +228,11 @@ try {
 
     
 
-    document.getElementById('successDeptName').textContent = deptId;
+    // document.getElementById('successDeptName').textContent = deptId;
+    // Show department name not ID
+    const deptSelect = document.getElementById('deptSelect');
+    const deptName = deptSelect.options[deptSelect.selectedIndex].text;
+    document.getElementById('successDeptName').textContent = deptName;
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('successView').classList.add('show');
     document.getElementById('cardFooter').style.display = 'none';
@@ -229,6 +243,11 @@ try {
   } catch (err) {
     console.error(err);
     showError("Registration failed. Try again.");
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
   }
 }
 

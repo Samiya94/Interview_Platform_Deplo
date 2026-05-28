@@ -1,3 +1,41 @@
+// ── Load domains from admin settings into interviewer registration select ──
+(async function loadDomainSelect() {
+    const select = document.getElementById('domainSelect');
+    if (!select) return;
+    try {
+        const res = await fetch('/api/domains');
+        if (!res.ok) throw new Error('failed');
+        const domains = await res.json();
+        select.innerHTML = '<option value="">Select Domain</option>'
+            + domains.map(d => `<option value="${d}">${d}</option>`).join('')
+            + '<option value="Other">Other</option>';
+    } catch(e) {
+        // fallback: keep the loading option but make it selectable
+        select.innerHTML = '<option value="">Select Domain</option><option value="Other">Other</option>';
+        console.error('Could not load domains', e);
+    }
+})();
+
+function toggleDomainOther() {
+    const sel = document.getElementById('domainSelect');
+    const wrap = document.getElementById('domainOtherWrap');
+    const input = document.getElementById('domainOther');
+    if (!sel || !wrap) return;
+    const show = sel.value === 'Other';
+    wrap.style.display = show ? '' : 'none';
+    if (!show && input) input.value = '';
+}
+
+function toggleQualificationOther() {
+    const sel = document.getElementById('qualificationSelect');
+    const wrap = document.getElementById('qualificationOtherWrap');
+    const input = document.getElementById('qualificationOther');
+    if (!sel || !wrap) return;
+    const show = sel.value === 'Other';
+    wrap.style.display = show ? '' : 'none';
+    if (!show && input) input.value = '';
+}
+
 // Validate registration link (ONLY for TPO registration page)
 
 const params = new URLSearchParams(window.location.search);
@@ -27,7 +65,17 @@ if(instId && token){
   });
 
 }
+
 /* ── Tab Switch ── */
+/* ── TOGGLE PASSWORD VISIBILITY ── */
+function togglePw(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon  = document.getElementById(iconId);
+  const isHidden = input.type === 'password';
+  input.type     = isHidden ? 'text' : 'password';
+  icon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+
 function switchTab(role){
   document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+role).classList.add('active');
@@ -69,13 +117,29 @@ function previewPhoto(input){
   reader.readAsDataURL(file);
 }
 
+function showResumeFilename(input){
+  const file=input.files[0];
+  const el=document.getElementById('resume-filename');
+  if(!file||!el)return;
+  const maxMB=5;
+  if(file.size>maxMB*1024*1024){
+    el.textContent='File too large (max 5 MB)';
+    el.style.color='#dc2626';
+    input.value='';
+    return;
+  }
+  el.textContent=file.name;
+  el.style.color='var(--success,#16a34a)';
+}
+
+
 /* ── Password Strength ── */
 function checkStrength(inputId, barId, textId){
   const val=document.getElementById(inputId).value;
   const bar=document.getElementById(barId);
   const txt=document.getElementById(textId);
-  let score=0;
-  if(val.length>=8)score++;
+    let score=0;
+  if(val.length>=6)score++;
   if(/[A-Z]/.test(val))score++;
   if(/[0-9]/.test(val))score++;
   if(/[^A-Za-z0-9]/.test(val))score++;
@@ -91,6 +155,69 @@ function checkStrength(inputId, barId, textId){
   bar.style.background=l.bg;
   txt.textContent=l.t?`Strength: ${l.t}`:'';
   txt.style.color=l.bg;
+}
+
+/* ── Interviewer Success Screen ── */
+function showInterviewerSuccess(name) {
+  const panel = document.getElementById('panel-interviewer');
+  if (!panel) return;
+
+  // Extract first name for personalised greeting
+  const firstName = (name || '').split(' ')[0] || 'there';
+
+  panel.innerHTML = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 32px;
+      gap: 0;
+    ">
+      <!-- animated tick circle -->
+      <div style="
+        width: 72px; height: 72px; border-radius: 50%;
+        background: #DCFCE7; display: flex; align-items: center;
+        justify-content: center; margin-bottom: 20px;
+        animation: popIn .4s cubic-bezier(.175,.885,.32,1.275) both;
+      ">
+        <i class="fa-solid fa-circle-check" style="font-size:36px; color:#16A34A;"></i>
+      </div>
+
+      <h2 style="font-size:22px; font-weight:800; color:var(--dark,#0F172A); margin-bottom:8px;">
+        You're registered, ${firstName}!
+      </h2>
+
+      <p style="font-size:15px; color:#64748B; margin-bottom:28px; max-width:360px; line-height:1.6;">
+        Your application has been received. Our admin team will review your profile and
+        <strong style="color:var(--dark,#0F172A);">notify you by email</strong> once your account is approved.
+      </p>
+
+      <a href="/login" style="
+        display:inline-flex; align-items:center; gap:8px;
+        background:var(--primary,#1E3A8A); color:#fff;
+        padding:12px 28px; border-radius:8px;
+        font-size:14px; font-weight:700; text-decoration:none;
+        transition: opacity .2s;
+      " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <i class="fa-solid fa-right-to-bracket"></i> Go to Login
+      </a>
+
+
+
+    </div>
+
+    <style>
+      @keyframes popIn {
+        0%   { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1);   opacity: 1; }
+      }
+    </style>
+  `;
+
+  // Scroll to the success card smoothly
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 /* ── Form Submit ── */
@@ -117,9 +244,22 @@ async function handleSubmit(e, role){
     confirmPassword = document.getElementById('int-confirm-password').value;
   }
 
+  if(password.length < 6){
+    showToast('Password must be at least 6 characters long.','error');
+    return;
+  }
+
   if(password !== confirmPassword){
     showToast('Passwords do not match.','error');
     return;
+  }
+
+  // Disable submit button
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
   }
 
   try {
@@ -141,8 +281,16 @@ async function handleSubmit(e, role){
       });
 
       if(response.ok){
-        showToast('Institute registered successfully!','success');
+        showSuccessModal("Institute Registered!", "Your institute has been registered successfully. You can now log in.");
         form.reset();
+      } else {
+        const errorText = await response.text();
+        showToast(errorText || 'Registration failed.','error');
+      }
+      
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
       }
 
     }
@@ -152,7 +300,39 @@ async function handleSubmit(e, role){
     // =========================
     if(role === 'interviewer'){
 
+      const domainSel = form.querySelector('[name="domain"]');
+      const qualSel = form.querySelector('[name="qualification"]');
+
+      if (domainSel && domainSel.value === 'Other') {
+        const custom = (document.getElementById('domainOther') || {}).value.trim();
+        if (!custom) {
+          showToast('Please enter your primary domain / expertise.', 'error');
+          return;
+        }
+      }
+      if (qualSel && qualSel.value === 'Other') {
+        const custom = (document.getElementById('qualificationOther') || {}).value.trim();
+        if (!custom) {
+          showToast('Please enter your highest qualification.', 'error');
+          return;
+        }
+      }
+
       const formData = new FormData(form);
+
+      // Capture name before we do anything else (form.reset() will clear it)
+      const fullName = form.querySelector('input[name="fullName"]')
+                         ? form.querySelector('input[name="fullName"]').value.trim()
+                         : '';
+
+      if (domainSel && domainSel.value === 'Other') {
+        formData.set('domain', document.getElementById('domainOther').value.trim());
+      }
+      if (qualSel && qualSel.value === 'Other') {
+        formData.set('qualification', document.getElementById('qualificationOther').value.trim());
+      }
+      formData.delete('domainOther');
+      formData.delete('qualificationOther');
 
       // Skills fix
       const skills = Array.from(document.querySelectorAll('#skills-tags-wrap .tag-chip'))
@@ -170,19 +350,30 @@ async function handleSubmit(e, role){
       });
 
       if(response.ok){
-        showToast('Interviewer registered successfully!','success');
+        const firstName = (fullName || '').split(' ')[0] || 'there';
+        showSuccessModal(
+            `You're registered, ${firstName}!`,
+            "Your application has been received. Our admin team will review your profile and notify you by email once your account is approved."
+        );
         form.reset();
+      } else {
+        const errorText = await response.text();
+        showToast(errorText || 'Interviewer registration failed.','error');
+      }
+      
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
       }
     }
-
-    // Redirect
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 2000);
 
   } catch (error) {
     console.error(error);
     showToast('Server error.','error');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
   }
 }
 
@@ -195,4 +386,12 @@ function showToast(msg,type='success'){
   void t.offsetWidth;
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+function showSuccessModal(title, msg) {
+  const modal = document.getElementById('successModal');
+  if (!modal) return;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  modal.classList.add('show');
 }

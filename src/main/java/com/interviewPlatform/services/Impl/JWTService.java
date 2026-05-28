@@ -11,6 +11,7 @@ import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,8 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JWTService {
 
-    private final String secretKey = "my-secret-key-my-secret-key-my-secret-key-123456";
+    @Value("${jwt.secret}")
+    private  String secretKey ;
 
     // public JWTService(){
     //     try {
@@ -57,7 +59,7 @@ public class JWTService {
             .subject(username)
             .claim("type", "access")
             .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15 )) // 15 min
+            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 min
             .signWith(getKey())
             .compact();
 }
@@ -75,7 +77,7 @@ public String generateRefreshToken(String username) {
 
 public boolean validateRefreshToken(String token) {
     try {
-        return !isTokenExpired(token);
+        return isRefreshToken(token) && !isTokenExpired(token);
     } catch (Exception e) {
         return false;
     }
@@ -100,11 +102,15 @@ public boolean validateRefreshToken(String token) {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+         try {
+            return Jwts.parser()
                     .verifyWith(getKey())
                     .build()
                     .parseSignedClaims(token)
-                    .getPayload();    
+                    .getPayload();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid JWT token");
+        }   
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

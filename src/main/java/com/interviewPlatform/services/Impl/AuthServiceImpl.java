@@ -4,9 +4,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.interviewPlatform.dtos.request.InstituteRegisterRequest;
 import com.interviewPlatform.dtos.request.InterviewerRegisterRequest;
@@ -34,6 +35,7 @@ public class AuthServiceImpl implements AuthService{
 
 
     @Override
+    @Transactional
     public void registerInstitute(InstituteRegisterRequest request) {
         // check duplicate
         if (userRepository.existsByEmail(request.email())) {
@@ -73,6 +75,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
+    @Transactional
     public void registerInterviewer(InterviewerRegisterRequest request) {
         if(userRepository.existsByEmail(request.email())){
             throw new RuntimeException("Email already exists");
@@ -87,7 +90,7 @@ public class AuthServiceImpl implements AuthService{
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.INTERVIEWER);
-        user.setStatus(Status.ACTIVE);
+        user.setStatus(Status.PENDING);
 
         User savedUser=userRepository.save(user);
 
@@ -114,14 +117,30 @@ public class AuthServiceImpl implements AuthService{
                 String fileName = System.currentTimeMillis() + "_" +
                         request.profilePhoto().getOriginalFilename();
 
-                Path path = Paths.get("uploads/" + fileName);
+                Path path = Paths.get("uploads/profiles/" + fileName);
                 Files.createDirectories(path.getParent());
                 Files.write(path, request.profilePhoto().getBytes());
 
-                interviewer.setProfilePhotoUrl(fileName);
+                interviewer.setProfilePhotoUrl("/uploads/profiles/" + fileName);
             }
         } catch (Exception e) {
             throw new RuntimeException("File upload failed");
+        }
+
+        //6. Handle Resume Upload
+        try {
+            if (request.resumeFile() != null && !request.resumeFile().isEmpty()) {
+                String resumeFileName = System.currentTimeMillis() + "_resume_" +
+                        request.resumeFile().getOriginalFilename();
+
+                Path resumePath = Paths.get("uploads/resumes/" + resumeFileName);
+                Files.createDirectories(resumePath.getParent());
+                Files.write(resumePath, request.resumeFile().getBytes());
+
+                interviewer.setResumeUrl("/uploads/resumes/" + resumeFileName);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Resume upload failed");
         }
 
         interviewerRepository.save(interviewer);

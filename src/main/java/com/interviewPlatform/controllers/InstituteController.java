@@ -29,6 +29,19 @@ public class InstituteController {
         return ResponseEntity.ok(instituteService.getInstituteById(id));
     }
 
+    // Public endpoint — only exposes name, used by mentor/student registration pages
+    @GetMapping("/{id}/public")
+    public ResponseEntity<?> getInstitutePublic(@PathVariable Long id) {
+        var inst = instituteService.getInstituteById(id);
+        return ResponseEntity.ok(inst);
+    }
+
+    // // Spring Security already has this
+    // @GetMapping("/me")
+    // public ResponseEntity<?> getMyInstitute(Authentication authentication) {
+    //     return ResponseEntity.ok(instituteService.getInstituteByEmail(authentication.getName()));
+    // }
+
     @GetMapping("/me")
     public ResponseEntity<?> getMyInstitute(HttpServletRequest request){
         //extract token from header
