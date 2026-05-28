@@ -250,6 +250,7 @@ async function loadPendingInterviewers() {
                 const name = iv.fullName || 'Unknown';
                 const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                 const resolvedPhotoUrl = iv.profilePhotoUrl ? (iv.profilePhotoUrl.startsWith('/') || iv.profilePhotoUrl.startsWith('http') ? iv.profilePhotoUrl : '/uploads/' + iv.profilePhotoUrl) : '';
+                const resolvedResumeUrl = iv.resumeUrl ? (iv.resumeUrl.startsWith('/') || iv.resumeUrl.startsWith('http') ? iv.resumeUrl : '/uploads/' + iv.resumeUrl) : '';
                 const email = iv.user?.email || '—';
                 const row = document.createElement('tr');
                 row.setAttribute('data-name', name);
@@ -260,13 +261,14 @@ async function loadPendingInterviewers() {
                 row.setAttribute('data-bio', iv.bio || '');
                 row.setAttribute('data-linkedin', iv.linkedin || '');
                 row.setAttribute('data-loc', iv.location || '');
-                row.setAttribute('data-resume', iv.resumeUrl || '');
+                row.setAttribute('data-resume', resolvedResumeUrl);
                 row.setAttribute('data-id', iv.id || '');
                 row.setAttribute('data-jobtitle', iv.jobTitle || '');
                 row.setAttribute('data-company', iv.company || '');
                 row.setAttribute('data-qualification', iv.qualification || '');
                 row.setAttribute('data-skills', (iv.skills || []).join(','));
                 row.setAttribute('data-interview-exp', iv.interviewExperience || '');
+                row.setAttribute('data-profilephoto', resolvedPhotoUrl);
                 
                 const avatarHtml = resolvedPhotoUrl 
                     ? `<img src="${resolvedPhotoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
@@ -314,10 +316,14 @@ function openRegProfileModal(row) {
     const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     const resumeUrl = d.resume || '';
     const resumeFileName = resumeUrl ? resumeUrl.split('/').pop() : '';
+    const profilePhotoUrl = d.profilephoto || '';
+    const avatarHtml = profilePhotoUrl
+        ? `<img src="${profilePhotoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+        : initials;
 
     const detailsHtml = `
         <div class="profile-banner">
-            <div class="profile-banner-avatar">${initials}</div>
+            <div class="profile-banner-avatar" style="overflow:hidden;">${avatarHtml}</div>
             <div>
                 <h3 style="font-size:15px;">${name}</h3>
                 <p style="font-size:12.5px;opacity:.8;">${d.jobtitle || d.domain || '—'}${d.company ? ' · ' + d.company : ''} · ${d.exp || '—'} yrs exp</p>
@@ -421,6 +427,7 @@ async function loadActiveInterviewers() {
             const isActive = iv.user?.status === 'ACTIVE';
             const row = document.createElement('tr');
             const resolvedPhotoUrl = iv.profilePhotoUrl ? (iv.profilePhotoUrl.startsWith('/') || iv.profilePhotoUrl.startsWith('http') ? iv.profilePhotoUrl : '/uploads/' + iv.profilePhotoUrl) : '';
+            const resolvedResumeUrl = iv.resumeUrl ? (iv.resumeUrl.startsWith('/') || iv.resumeUrl.startsWith('http') ? iv.resumeUrl : '/uploads/' + iv.resumeUrl) : '';
             
             row.setAttribute('data-status', isActive ? 'active' : 'inactive');
             row.setAttribute('data-name', name);
@@ -433,7 +440,7 @@ async function loadActiveInterviewers() {
             row.setAttribute('data-interviews', iv.interviewsConducted || '0');
             row.setAttribute('data-rating', iv.averageRating > 0 ? iv.averageRating : '—');
             row.setAttribute('data-id', iv.id);
-            row.setAttribute('data-resume', iv.resumeUrl || '');
+            row.setAttribute('data-resume', resolvedResumeUrl);
             row.setAttribute('data-linkedin', iv.linkedin || '');
             row.setAttribute('data-jobtitle', iv.jobTitle || '');
             row.setAttribute('data-company', iv.company || '');
