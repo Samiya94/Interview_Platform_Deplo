@@ -249,6 +249,7 @@ async function loadPendingInterviewers() {
             interviewers.forEach(iv => {
                 const name = iv.fullName || 'Unknown';
                 const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                const resolvedPhotoUrl = iv.profilePhotoUrl ? (iv.profilePhotoUrl.startsWith('/') || iv.profilePhotoUrl.startsWith('http') ? iv.profilePhotoUrl : '/uploads/' + iv.profilePhotoUrl) : '';
                 const email = iv.user?.email || '—';
                 const row = document.createElement('tr');
                 row.setAttribute('data-name', name);
@@ -266,9 +267,14 @@ async function loadPendingInterviewers() {
                 row.setAttribute('data-qualification', iv.qualification || '');
                 row.setAttribute('data-skills', (iv.skills || []).join(','));
                 row.setAttribute('data-interview-exp', iv.interviewExperience || '');
+                
+                const avatarHtml = resolvedPhotoUrl 
+                    ? `<img src="${resolvedPhotoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+                    : initials;
+
                 row.innerHTML = `
                     <td><div style="display:flex;align-items:center;gap:10px;">
-                        <div style="width:34px;height:34px;border-radius:50%;background:#EFF6FF;color:var(--primary);display:grid;place-items:center;font-weight:800;font-size:12px;">${initials}</div>
+                        <div style="width:34px;height:34px;border-radius:50%;background:#EFF6FF;color:var(--primary);display:grid;place-items:center;font-weight:800;font-size:12px;overflow:hidden;">${avatarHtml}</div>
                         <b>${name}</b></div></td>
                     <td style="font-size:12px;color:var(--muted);">${email}</td>
                     <td>${iv.domain || '—'}</td>
@@ -1166,10 +1172,20 @@ async function loadNotifications() {
     const listEl = document.getElementById('notifList');
     if (!listEl) return;
     try {
-        const res = await secureFetch('/api/interview-requests/all');
-        if (!res || !res.ok) { listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No notifications.</div>'; return; }
-        const requests = await res.json();
-        const recent = [...requests].sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt)).slice(0,6);
+        const reqRes = await secureFetch('/api/interview-requests/all');
+        const intRes = await secureFetch('/api/admin/interviewers/pending');
+        
+        let requests = [];
+        let pendingIvs = [];
+        
+        if (reqRes && reqRes.ok) requests = await reqRes.json();
+        if (intRes && intRes.ok) pendingIvs = await intRes.json();
+
+        if (!requests.length && !pendingIvs.length) {
+            listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No notifications.</div>';
+            return;
+        }
+
         const cfgMap = {
             PENDING:     { bg:'#EFF6FF', color:'var(--primary)',  icon:'fa-building',      title:'New Institute Request' },
             SCHEDULED:   { bg:'#F0FDF4', color:'var(--success)',  icon:'fa-calendar-check', title:'Interview Scheduled' },
@@ -1177,23 +1193,62 @@ async function loadNotifications() {
             CONFIRMED:   { bg:'#F0FDF4', color:'var(--success)',  icon:'fa-circle-check',   title:'Institute Confirmed' },
             CANCELLED:   { bg:'#FFF1F2', color:'var(--danger)',   icon:'fa-circle-xmark',   title:'Cancelled' }
         };
+
         const timeAgo = dt => {
+            if (!dt) return 'just now';
             const diff = Date.now() - new Date(dt);
             if (diff < 60000) return 'just now';
             if (diff < 3600000) return Math.floor(diff/60000) + ' min ago';
             if (diff < 86400000) return Math.floor(diff/3600000) + ' hr ago';
             return Math.floor(diff/86400000) + 'd ago';
         };
-        listEl.innerHTML = recent.length ? recent.map(r => {
-            const cfg = cfgMap[r.status] || cfgMap.PENDING;
-            return `<div class="notif-item unread" style="cursor:pointer;" onclick="showPage('inst-req',null);closeNotifPanel()">
-                <div class="notif-icon" style="background:${cfg.bg};color:${cfg.color};"><i class="fa-solid ${cfg.icon}"></i></div>
-                <div><div style="font-size:13px;font-weight:600;">${cfg.title}</div>
-                <div style="font-size:12px;color:var(--muted);">${r.instituteName||'Unknown'} · ${r.departmentName||''} • ${timeAgo(r.updatedAt||r.createdAt)}</div></div>
-            </div>`;
-        }).join('') : '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No recent activity.</div>';
+
+        const mappedRequests = requests.map(r => ({
+            type: 'REQUEST',
+            status: r.status,
+            date: r.updatedAt || r.createdAt,
+            title: cfgMap[r.status] ? cfgMap[r.status].title : 'Interview Request',
+            desc: `${r.instituteName||'Unknown'} · ${r.departmentName||''}`,
+            icon: cfgMap[r.status] ? cfgMap[r.status].icon : 'fa-building',
+            bg: cfgMap[r.status] ? cfgMap[r.status].bg : '#EFF6FF',
+            color: cfgMap[r.status] ? cfgMap[r.status].color : 'var(--primary)',
+            action: "showPage('inst-req',null);closeNotifPanel()"
+        }));
+
+        const mappedIvs = pendingIvs.map(iv => ({
+            type: 'INTERVIEWER',
+            status: 'PENDING',
+            date: iv.createdAt || new Date(),
+            title: 'New Interviewer Registration',
+            desc: `${iv.fullName||'Unknown'} · ${iv.domain||'General'}`,
+            icon: 'fa-user-plus',
+            bg: '#EFF6FF',
+            color: 'var(--primary)',
+            action: "showPage('int-req',null);closeNotifPanel()"
+        }));
+
+        const allNotifs = [...mappedRequests, ...mappedIvs]
+            .sort((a,b) => new Date(b.date) - new Date(a.date));
+            
+        const recent = allNotifs.slice(0, 6);
+
+        listEl.innerHTML = recent.length ? recent.map(n => `
+            <div class="notif-item unread" style="cursor:pointer;" onclick="${n.action}">
+                <div class="notif-icon" style="background:${n.bg};color:${n.color};"><i class="fa-solid ${n.icon}"></i></div>
+                <div><div style="font-size:13px;font-weight:600;">${n.title}</div>
+                <div style="font-size:12px;color:var(--muted);">${n.desc} • ${timeAgo(n.date)}</div></div>
+            </div>`).join('') : '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No recent activity.</div>';
+
         const dot = document.getElementById('notifDot');
-        if (dot) dot.style.display = recent.some(r=>r.status==='PENDING') ? 'block' : 'none';
+        if (dot) {
+            const count = requests.filter(r => r.status === 'PENDING').length + pendingIvs.length;
+            if (count > 0) {
+                dot.style.display = 'flex';
+                dot.textContent = count > 99 ? '99+' : count;
+            } else {
+                dot.style.display = 'none';
+            }
+        }
     } catch(e) { console.error('Notifications error',e); }
 }
 
