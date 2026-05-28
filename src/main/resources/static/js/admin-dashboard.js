@@ -226,6 +226,18 @@ async function loadRecentActivity() {
 /* ═══════════════════════════════════════
    PENDING INTERVIEWERS
 ═══════════════════════════════════════ */
+function resolveFileUrl(url) {
+    try {
+        if (!url || url === 'null' || url === 'undefined') return '';
+        const u = String(url).trim();
+        if (!u) return '';
+        if (u.startsWith('/') || u.startsWith('http')) return u;
+        return '/uploads/' + u;
+    } catch (e) {
+        return '';
+    }
+}
+
 async function loadPendingInterviewers() {
     try {
         const res = await secureFetch('/api/admin/interviewers/pending');
@@ -249,8 +261,8 @@ async function loadPendingInterviewers() {
             interviewers.forEach(iv => {
                 const name = iv.fullName || 'Unknown';
                 const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-                const resolvedPhotoUrl = iv.profilePhotoUrl ? (iv.profilePhotoUrl.startsWith('/') || iv.profilePhotoUrl.startsWith('http') ? iv.profilePhotoUrl : '/uploads/' + iv.profilePhotoUrl) : '';
-                const resolvedResumeUrl = iv.resumeUrl ? (iv.resumeUrl.startsWith('/') || iv.resumeUrl.startsWith('http') ? iv.resumeUrl : '/uploads/' + iv.resumeUrl) : '';
+                const resolvedPhotoUrl = resolveFileUrl(iv.profilePhotoUrl);
+                const resolvedResumeUrl = resolveFileUrl(iv.resumeUrl);
                 const email = iv.user?.email || '—';
                 const row = document.createElement('tr');
                 row.setAttribute('data-name', name);
@@ -426,8 +438,8 @@ async function loadActiveInterviewers() {
             const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             const isActive = iv.user?.status === 'ACTIVE';
             const row = document.createElement('tr');
-            const resolvedPhotoUrl = iv.profilePhotoUrl ? (iv.profilePhotoUrl.startsWith('/') || iv.profilePhotoUrl.startsWith('http') ? iv.profilePhotoUrl : '/uploads/' + iv.profilePhotoUrl) : '';
-            const resolvedResumeUrl = iv.resumeUrl ? (iv.resumeUrl.startsWith('/') || iv.resumeUrl.startsWith('http') ? iv.resumeUrl : '/uploads/' + iv.resumeUrl) : '';
+            const resolvedPhotoUrl = resolveFileUrl(iv.profilePhotoUrl);
+            const resolvedResumeUrl = resolveFileUrl(iv.resumeUrl);
             
             row.setAttribute('data-status', isActive ? 'active' : 'inactive');
             row.setAttribute('data-name', name);
