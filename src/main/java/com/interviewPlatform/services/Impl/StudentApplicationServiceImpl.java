@@ -79,49 +79,56 @@ public class StudentApplicationServiceImpl implements StudentApplicationService 
     }
 
     private void sendInterviewConfirmationEmail(Student student, InterviewRequest request) {
-        try {
-            String studentEmail = student.getUser().getEmail();
-            String studentName  = student.getFirstName() + " " + student.getLastName();
+        String studentEmail = student.getUser().getEmail();
+        String studentName  = student.getFirstName() + " " + student.getLastName();
 
-            String dateStr = request.getScheduledDate() != null
-                    ? request.getScheduledDate().format(DISPLAY_FMT)
-                    : (request.getStartDate() != null ? request.getStartDate().format(DISPLAY_FMT) : "To be announced");
+        String dateStr = request.getScheduledDate() != null
+                ? request.getScheduledDate().format(DISPLAY_FMT)
+                : (request.getStartDate() != null ? request.getStartDate().format(DISPLAY_FMT) : "To be announced");
 
-            StringBuilder body = new StringBuilder();
-            body.append("Dear ").append(studentName).append(",\n\n");
-            body.append("Your interview has been confirmed. Here are the details:\n\n");
-            body.append("Department  : ").append(request.getDepartmentName() != null ? request.getDepartmentName() : "").append("\n");
-            body.append("Date & Time : ").append(dateStr).append("\n");
+        String deptName = request.getDepartmentName() != null ? request.getDepartmentName() : "";
+        String venue = request.getScheduledVenue();
+        String meetLink = request.getMeetingLink();
+        String contactPerson = request.getContactPerson();
+        String contactEmail = request.getContactEmail();
 
-            if (request.getScheduledVenue() != null && !request.getScheduledVenue().isBlank()) {
-                body.append("Venue       : ").append(request.getScheduledVenue()).append("\n");
-            }
-            if (request.getMeetingLink() != null && !request.getMeetingLink().isBlank()) {
-                body.append("Meeting Link: ").append(request.getMeetingLink()).append("\n");
-            }
-            if (request.getContactPerson() != null && !request.getContactPerson().isBlank()) {
-                body.append("Contact     : ").append(request.getContactPerson());
-                if (request.getContactEmail() != null && !request.getContactEmail().isBlank()) {
-                    body.append(" (").append(request.getContactEmail()).append(")");
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                StringBuilder body = new StringBuilder();
+                body.append("Dear ").append(studentName).append(",\n\n");
+                body.append("Your interview has been confirmed. Here are the details:\n\n");
+                body.append("Department  : ").append(deptName).append("\n");
+                body.append("Date & Time : ").append(dateStr).append("\n");
+
+                if (venue != null && !venue.isBlank()) {
+                    body.append("Venue       : ").append(venue).append("\n");
                 }
-                body.append("\n");
+                if (meetLink != null && !meetLink.isBlank()) {
+                    body.append("Meeting Link: ").append(meetLink).append("\n");
+                }
+                if (contactPerson != null && !contactPerson.isBlank()) {
+                    body.append("Contact     : ").append(contactPerson);
+                    if (contactEmail != null && !contactEmail.isBlank()) {
+                        body.append(" (").append(contactEmail).append(")");
+                    }
+                    body.append("\n");
+                }
+
+                body.append("\nPlease log in to your dashboard to view full details and join your interview.\n");
+                body.append("\nBest of luck!\nInterview Platform Team");
+
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(studentEmail);
+                message.setFrom(fromEmail);
+                message.setSubject("Interview Confirmed — " + (deptName.isBlank() ? "Interview" : deptName));
+                message.setText(body.toString());
+
+                mailSender.send(message);
+                log.info("Interview confirmation email sent to {}", studentEmail);
+            } catch (Exception e) {
+                log.error("Failed to send confirmation email to student {}: {}", studentEmail, e.getMessage());
             }
-
-            body.append("\nPlease log in to your dashboard to view full details and join your interview.\n");
-            body.append("\nBest of luck!\nInterview Platform Team");
-
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(studentEmail);
-            message.setFrom(fromEmail);
-            message.setSubject("Interview Confirmed — " + (request.getDepartmentName() != null ? request.getDepartmentName() : "Interview"));
-            message.setText(body.toString());
-
-            mailSender.send(message);
-            log.info("Interview confirmation email sent to {}", studentEmail);
-        } catch (Exception e) {
-            // Do not fail the transaction if email fails — application is already saved
-            log.error("Failed to send confirmation email to student {}: {}", student.getUser().getEmail(), e.getMessage());
-        }
+        });
     }
 
     @Override

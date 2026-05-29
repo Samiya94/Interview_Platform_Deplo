@@ -194,13 +194,15 @@ public class AdminController {
             + "— Interview Platform Team"
         );
 
-        try {
-            mailSender.send(message);
-            log.info("Approval email sent to interviewer: {}", email);
-        } catch (MailException e) {
-            // Log the failure but don't block the approval — status is already saved
-            log.error("Failed to send approval email to {}: {}", email, e.getMessage());
-        }
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                mailSender.send(message);
+                log.info("Approval email sent to interviewer: {}", email);
+            } catch (MailException e) {
+                // Log the failure but don't block the approval — status is already saved
+                log.error("Failed to send approval email to {}: {}", email, e.getMessage());
+            }
+        });
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -322,42 +322,55 @@ public class InterviewRequestServiceImpl implements InterviewRequestService {
     private void notifyInterviewersOfAssignment(InterviewRequest req, List<Long> ids) {
         if (ids == null || ids.isEmpty()) return;
         List<Interviewer> interviewers = interviewerRepository.findAllById(ids);
+        
+        String institute  = req.getInstitute() != null ? req.getInstitute().getInstituteName() : "—";
+        String dept       = req.getDepartmentName() != null ? req.getDepartmentName() : "—";
+        String scheduled  = req.getScheduledDate() != null
+            ? req.getScheduledDate().toString().replace("T", " at ")
+            : (req.getStartDate() != null ? req.getStartDate().toString().replace("T", " at ") : "TBD");
+        String venue      = req.getScheduledVenue() != null ? req.getScheduledVenue() : "—";
+        String meetLink   = req.getMeetingLink()    != null ? req.getMeetingLink()    : "—";
+
+        List<String[]> ivData = new ArrayList<>();
         for (Interviewer iv : interviewers) {
-            try {
-                String toEmail = iv.getUser() != null ? iv.getUser().getEmail() : null;
-                if (toEmail == null || toEmail.isBlank()) continue;
-
-                String institute  = req.getInstitute() != null ? req.getInstitute().getInstituteName() : "—";
-                String dept       = req.getDepartmentName() != null ? req.getDepartmentName() : "—";
-                String scheduled  = req.getScheduledDate() != null
-                    ? req.getScheduledDate().toString().replace("T", " at ")
-                    : (req.getStartDate() != null ? req.getStartDate().toString().replace("T", " at ") : "TBD");
-                String venue      = req.getScheduledVenue() != null ? req.getScheduledVenue() : "—";
-                String meetLink   = req.getMeetingLink()    != null ? req.getMeetingLink()    : "—";
-
-                StringBuilder body = new StringBuilder();
-                body.append("Dear ").append(iv.getFullName() != null ? iv.getFullName() : "Interviewer").append(",\n\n");
-                body.append("You have been assigned to conduct an interview. Here are the details:\n\n");
-                body.append("  Institute  : ").append(institute).append("\n");
-                body.append("  Department : ").append(dept).append("\n");
-                body.append("  Date/Time  : ").append(scheduled).append("\n");
-                body.append("  Venue      : ").append(venue).append("\n");
-                body.append("  Meeting    : ").append(meetLink).append("\n\n");
-                body.append("Please log in to your Interviewer Dashboard to view your full schedule,\n");
-                body.append("student list, and meeting details.\n\n");
-                body.append("Best regards,\nInterview Platform Team");
-
-                SimpleMailMessage msg = new SimpleMailMessage();
-                msg.setTo(toEmail);
-                msg.setFrom(fromEmail);
-                msg.setSubject("You've been assigned an interview — " + dept + " @ " + institute);
-                msg.setText(body.toString());
-                mailSender.send(msg);
-                log.info("Assignment email sent to interviewer {}", toEmail);
-            } catch (Exception e) {
-                log.error("Failed to send assignment email to interviewer {}: {}", iv.getId(), e.getMessage());
+            String toEmail = iv.getUser() != null ? iv.getUser().getEmail() : null;
+            if (toEmail != null && !toEmail.isBlank()) {
+                String name = iv.getFullName() != null ? iv.getFullName() : "Interviewer";
+                ivData.add(new String[]{iv.getId().toString(), toEmail, name});
             }
         }
+
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            for (String[] data : ivData) {
+                try {
+                    String ivId = data[0];
+                    String toEmail = data[1];
+                    String name = data[2];
+
+                    StringBuilder body = new StringBuilder();
+                    body.append("Dear ").append(name).append(",\n\n");
+                    body.append("You have been assigned to conduct an interview. Here are the details:\n\n");
+                    body.append("  Institute  : ").append(institute).append("\n");
+                    body.append("  Department : ").append(dept).append("\n");
+                    body.append("  Date/Time  : ").append(scheduled).append("\n");
+                    body.append("  Venue      : ").append(venue).append("\n");
+                    body.append("  Meeting    : ").append(meetLink).append("\n\n");
+                    body.append("Please log in to your Interviewer Dashboard to view your full schedule,\n");
+                    body.append("student list, and meeting details.\n\n");
+                    body.append("Best regards,\nInterview Platform Team");
+
+                    SimpleMailMessage msg = new SimpleMailMessage();
+                    msg.setTo(toEmail);
+                    msg.setFrom(fromEmail);
+                    msg.setSubject("You've been assigned an interview — " + dept + " @ " + institute);
+                    msg.setText(body.toString());
+                    mailSender.send(msg);
+                    log.info("Assignment email sent to interviewer {}", toEmail);
+                } catch (Exception e) {
+                    log.error("Failed to send assignment email to interviewer {}: {}", data[0], e.getMessage());
+                }
+            }
+        });
     }
 
     private InterviewRequestResponseDTO mapToDTO(InterviewRequest req) {
