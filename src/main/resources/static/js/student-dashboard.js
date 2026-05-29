@@ -579,7 +579,7 @@ function buildSlotCardHTML(s) {
     (s.contactPerson?'<div class="ac-meta"><i class="fa-solid fa-user-tie"></i><b>'+escHtml(s.contactPerson)+'</b></div>':'')+
     (applied
       ?'<button class="btn" style="width:100%;justify-content:center;background:#DCFCE7;color:#166534;border:1.5px solid #86EFAC;margin-top:2px;" disabled><i class="fa-solid fa-check"></i> Applied!</button>'
-      :'<button class="btn btn-s" style="width:100%;justify-content:center;margin-top:2px;" onclick="applySlotById('+s.id+',\''+escHtml(s.topic)+'\',\''+escHtml(s.dateTime)+'\',\''+escHtml(s.contactPerson||'')+'\')"><i class="fa-solid fa-check"></i> Apply</button>');
+      :'<button class="btn btn-s" style="width:100%;justify-content:center;margin-top:2px;" onclick="applySlotById(this.getAttribute(\'data-id\'), this.getAttribute(\'data-topic\'), this.getAttribute(\'data-dt\'), this.getAttribute(\'data-cp\'))" data-id="'+s.id+'" data-topic="'+escHtml(s.topic)+'" data-dt="'+escHtml(s.dateTime)+'" data-cp="'+escHtml(s.contactPerson||'')+'"><i class="fa-solid fa-check"></i> Apply</button>');
 }
 
 // ── Profile Reminder Modal ────────────────────────────────────────────────────
@@ -758,7 +758,7 @@ function renderAPISlotGrid(containerId, slotsOverride) {
             (s.venue ? '<div class="ac-meta"><i class="fa-solid fa-location-dot"></i><b>' + escHtml(s.venue) + '</b></div>' : '') +
             (applied
                 ? '<button class="btn" style="width:100%;justify-content:center;background:#DCFCE7;color:#166534;border:1.5px solid #86EFAC;margin-top:2px;" disabled><i class="fa-solid fa-check"></i> Applied!</button>'
-                : '<button class="btn btn-s" style="width:100%;justify-content:center;margin-top:2px;" onclick="applyToInterview(' + s.id + ', \'' + escHtml(s.topic) + '\')"><i class="fa-solid fa-check"></i> Apply</button>');
+                : '<button class="btn btn-s" style="width:100%;justify-content:center;margin-top:2px;" onclick="applyToInterview(this.getAttribute(\'data-id\'), this.getAttribute(\'data-topic\'))" data-id="' + s.id + '" data-topic="' + escHtml(s.topic) + '"><i class="fa-solid fa-check"></i> Apply</button>');
         c.appendChild(d);
     });
 }

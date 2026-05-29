@@ -50,8 +50,8 @@ public class StudentApplicationServiceImpl implements StudentApplicationService 
         InterviewRequest request = interviewRequestRepository.findById(interviewRequestId)
             .orElseThrow(() -> new RuntimeException("Interview not found"));
 
-        // Only allow applying when status is CONFIRMED or RESCHEDULED
-        if (request.getStatus() != Status.CONFIRMED && request.getStatus() != Status.RESCHEDULED) {
+        // Only allow applying when status is CONFIRMED, RESCHEDULED, or AWAITING_CONFIRMATION
+        if (request.getStatus() != Status.CONFIRMED && request.getStatus() != Status.RESCHEDULED && request.getStatus() != Status.AWAITING_CONFIRMATION) {
             throw new RuntimeException("This interview is not open for applications");
         }
 
