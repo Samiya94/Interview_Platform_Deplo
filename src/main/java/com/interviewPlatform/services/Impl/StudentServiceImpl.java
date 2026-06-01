@@ -180,7 +180,8 @@ public class StudentServiceImpl implements StudentService {
                     .filter(a -> a.getStatus() == Status.APPROVED && 
                                  a.getInterviewRequest() != null && 
                                  a.getInterviewRequest().getStatus() == Status.COMPLETED)
-                    .count()
+                    .count(),
+                student.getProfilePhotoUrl()
         );
     }
 
