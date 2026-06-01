@@ -116,12 +116,16 @@ async function loadAssignedInterviews() {
     });
     await Promise.all(studentFetches);
     APP.scheduleStudents = APP.interviews.flatMap(iv => (APP.studentsByInterview[iv.id] || []).map(s => normalizeStudent(iv, s)));
-    chooseCurrentLiveStudent();
+    if (!APP.sessionActive) {
+      chooseCurrentLiveStudent();
+    }
     renderProfileStats();
     renderSlotAlertBanner();
     renderNotifications();
     renderScheduleTables();
-    renderLiveStudent();
+    if (!APP.sessionActive) {
+      renderLiveStudent();
+    }
   } catch (e) { console.error('Assigned interviews error:', e); }
 }
 
@@ -1115,7 +1119,7 @@ function addSkill(e) { if (e.key !== 'Enter') return; const input = document.get
 function checkPassStrength() { const v = document.getElementById('newPass').value; const el = document.getElementById('passStrength'); if (!v) { el.style.display = 'none'; return; } el.style.display = 'block'; if (v.length < 6) { el.style.color = '#DC2626'; el.innerText = 'Weak password'; } else if (v.length < 10 || !/[A-Z]/.test(v) || !/[0-9]/.test(v)) { el.style.color = '#EAB308'; el.innerText = 'Medium strength'; } else { el.style.color = '#16A34A'; el.innerText = 'Strong password'; } }
 function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confirmPass').value; if (!np) return showToast('Enter a new password.', 'warn'); if (np !== cp) return showToast('Passwords do not match.', 'error'); showToast('Password updated successfully!'); document.getElementById('newPass').value = ''; document.getElementById('confirmPass').value = ''; document.getElementById('passStrength').style.display = 'none'; }
 function confirmLogout() { closeOverlay('logoutOverlay'); logout(); }
-function showToast(msg, type = 'success') { const map = { success: ['#DCFCE7', '#166534'], warn: ['#FEF3C7', '#92400E'], error: ['#FEE2E2', '#991B1B'] }; const colors = map[type] || map.success; const t = document.createElement('div'); t.className = 'toast'; t.style.cssText = `background:${colors[0]};color:${colors[1]};`; t.innerText = msg; document.body.appendChild(t); setTimeout(() => {t.remove();if(!type||type==='success'){window.location.reload();}},1500); }
+function showToast(msg, type = 'success') { const map = { success: ['#DCFCE7', '#166534'], warn: ['#FEF3C7', '#92400E'], error: ['#FEE2E2', '#991B1B'] }; const colors = map[type] || map.success; const t = document.createElement('div'); t.className = 'toast'; t.style.cssText = `background:${colors[0]};color:${colors[1]};`; t.innerText = msg; document.body.appendChild(t); setTimeout(() => {t.remove();},1500); }
 
 function fillSkills(skills) {
   const area = document.getElementById('skillTagArea');

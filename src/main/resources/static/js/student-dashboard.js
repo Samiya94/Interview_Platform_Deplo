@@ -1495,7 +1495,7 @@ function showToast(msg,type){
   var c={success:['#DCFCE7','#166534'],warn:['#FEF3C7','#92400E'],error:['#FEE2E2','#991B1B']}[type]||['#DCFCE7','#166534'];
   var ico=type==='error'?'circle-xmark':type==='warn'?'triangle-exclamation':'circle-check';
   var t=document.createElement('div');t.className='toast';t.style.cssText='background:'+c[0]+';color:'+c[1]+';';
-  t.innerHTML='<i class="fa-solid fa-'+ico+'"></i>'+msg;document.body.appendChild(t);setTimeout(function(){t.remove();if(type==='success'){window.location.reload();}},1500);
+  t.innerHTML='<i class="fa-solid fa-'+ico+'"></i>'+msg;document.body.appendChild(t);setTimeout(function(){t.remove();},1500);
 }
 
 async function handleProfilePic(input) {
