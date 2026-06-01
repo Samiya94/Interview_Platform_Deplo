@@ -119,6 +119,14 @@ async function handleLogin(event) {
       const rememberMe = document.getElementById('rememberMe').checked;
       const storage = rememberMe ? localStorage : sessionStorage;
 
+      // Clear both storages first to prevent conflicts (e.g. old tokens in localStorage when using sessionStorage)
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+      sessionStorage.removeItem("user");
+
       // 🔐 Store tokens
       storage.setItem("accessToken", data.accessToken);
       storage.setItem("refreshToken", data.refreshToken);

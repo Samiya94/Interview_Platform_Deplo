@@ -66,13 +66,13 @@ public class UserServiceImpl implements UserService {
         //Authenticate User
         Authentication authentication=authManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 
-        if(authentication.isAuthenticated()){
-            //Generate both tokens
-        String accessToken = jwtService.generateAccessToken(request.email());
-        String refreshToken = jwtService.generateRefreshToken(request.email());
-
              //Fetch role from DB
         User dbUser = userRepository.findByEmail(request.email()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(authentication.isAuthenticated()){
+            //Generate both tokens
+        String accessToken = jwtService.generateAccessToken(dbUser.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(dbUser.getEmail());
 
         // Block pending/rejected interviewers from logging in
         if (dbUser.getRole() == Role.INTERVIEWER) {
