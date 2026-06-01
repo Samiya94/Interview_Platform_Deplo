@@ -35,7 +35,9 @@ async function refreshInterviewerDashboard() {
   renderScheduleTables();
   renderHistory();
   renderProfileReviews();
-  renderLiveStudent();
+  if (!APP.sessionActive) {
+    renderLiveStudent();
+  }
 }
 
 async function loadInterviewerProfile() {
@@ -532,7 +534,7 @@ function startRealtimeRefresh() {
 
     // Re-render banner only when the "next" slot changes (avoid DOM thrash every second)
     const nextId = upcoming.length ? upcoming[0].id : null;
-    if (nextId !== APP._lastBannerSlotId) {
+    if (nextId !== APP._lastBannerSlotId && !APP.sessionActive) {
       APP._lastBannerSlotId = nextId;
       renderSlotAlertBanner();
       renderNotifications();
@@ -570,6 +572,7 @@ function setStep(n) { for (let i = 1; i <= 3; i++) { const s = document.getEleme
 function goToPhase2() { if (!APP.currentLiveStudent) return showToast('No students are available for interview yet.', 'warn'); document.getElementById('phase-info').classList.remove('active'); document.getElementById('phase-live').classList.add('active'); setStep(2); }
 async function startSession() {
   if (!APP.currentLiveStudent) return;
+  APP.sessionActive = true;
   document.getElementById('startBtn').disabled = true;
   document.getElementById('endBtn').disabled = false;
   APP.seconds = 0;
@@ -644,6 +647,7 @@ async function stopWebcamAndUpload() {
 async function confirmEndSession() {
   closeOverlay('endConfirmModal');
   clearInterval(APP.timerInterval);
+  APP.sessionActive = false;
   document.getElementById('endBtn').disabled = true;
   setText('evalDuration', document.getElementById('liveClock').innerText);
   await stopWebcamAndUpload();

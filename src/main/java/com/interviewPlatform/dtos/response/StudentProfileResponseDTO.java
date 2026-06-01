@@ -10,7 +10,6 @@ public record StudentProfileResponseDTO(
         String phone,
         String studentClass,
         Double cgpa,
-        String about,
         List<String> skills,
         Long instituteId,
         String instituteName,

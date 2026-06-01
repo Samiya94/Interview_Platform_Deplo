@@ -45,9 +45,6 @@ public class Student {
 
     private Double cgpa;
 
-    @Column(length = 1000)
-    private String about;
-
     @ElementCollection
     @CollectionTable(name = "student_skills", joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "skill")

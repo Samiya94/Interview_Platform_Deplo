@@ -5,7 +5,6 @@ import java.util.List;
 public record StudentProfileUpdateRequestDTO(
         String studentClass,
         Double cgpa,
-        String about,
         List<String> skills,
         String projects
 ) {

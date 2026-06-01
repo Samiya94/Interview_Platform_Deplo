@@ -111,7 +111,6 @@ public class InterviewerDashboardController {
                 ? "/uploads/" + resumeFileName : null);
             // Extra profile info
             m.put("skills", a.getStudent().getSkills());
-            m.put("about", a.getStudent().getAbout());
             m.put("projects", a.getStudent().getProjects());
             m.put("profilePhotoUrl", a.getStudent().getProfilePhotoUrl());
             m.put("evaluationSubmitted", evaluationRepository.existsByApplicationId(a.getId()));

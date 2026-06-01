@@ -210,14 +210,7 @@
         <button class="btn btn-sm btn-ghost" onclick="showView('apply')"><i class="fa-solid fa-arrow-right"></i> View All</button>
       </div>
       <div class="card-body" style="padding-bottom:16px;">
-        <div class="scroll-arrow-row">
-          <span class="scroll-label"><i class="fa-solid fa-hand-pointer"></i> Swipe or use arrows to browse</span>
-          <div class="scroll-arrows">
-            <button class="scroll-arr-btn" onclick="scrollSlots('dashSlots',-1)"><i class="fa-solid fa-chevron-left"></i></button>
-            <button class="scroll-arr-btn" onclick="scrollSlots('dashSlots',1)"><i class="fa-solid fa-chevron-right"></i></button>
-          </div>
-        </div>
-        <div class="scroll-hint-wrap"><div class="apply-grid" id="dashSlots"></div></div>
+        <div><div class="apply-grid" id="dashSlots"></div></div>
       </div>
     </div>
     <!-- Two col -->
@@ -263,14 +256,7 @@
         </div>
       </div>
       <div class="card-body" style="padding-bottom:16px;">
-        <div class="scroll-arrow-row">
-          <span class="scroll-label"><i class="fa-solid fa-hand-pointer"></i> Swipe or use arrows to browse all slots</span>
-          <div class="scroll-arrows">
-            <button class="scroll-arr-btn" onclick="scrollSlots('applyGrid',-1)"><i class="fa-solid fa-chevron-left"></i></button>
-            <button class="scroll-arr-btn" onclick="scrollSlots('applyGrid',1)"><i class="fa-solid fa-chevron-right"></i></button>
-          </div>
-        </div>
-        <div class="scroll-hint-wrap"><div class="apply-grid" id="applyGrid"></div></div>
+        <div><div class="apply-grid" id="applyGrid"></div></div>
       </div>
     </div>
   </section>
@@ -413,10 +399,7 @@
               <label>My Projects</label>
               <textarea class="form-field editable" id="pf_projects" rows="4" style="resize:vertical;" placeholder="List your projects, brief descriptions, and github links here…"></textarea>
             </div>
-            <div class="form-group">
-              <label>About Me</label>
-              <textarea class="form-field editable" id="pf_about" rows="3" style="resize:none;cursor:auto;">Passionate about full-stack development and machine learning. Looking to strengthen my interview skills.</textarea>
-            </div>
+
             <div class="form-group" style="margin-bottom:0;">
               <label>Skills / Interests</label>
               <div class="skill-tag-area" id="skillArea" onclick="document.getElementById('skillInput').focus()">
@@ -491,7 +474,7 @@
           <div class="card-body" style="display:flex;flex-direction:column;gap:9px;">
             <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:11px 13px;border-radius:var(--r);"><span style="font-size:13px;color:var(--muted);">Total Interviews</span><b style="color:var(--primary);" id="msTotalInterviews">—</b></div>
             <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:11px 13px;border-radius:var(--r);"><span style="font-size:13px;color:var(--muted);">Average Score</span><b style="color:var(--accent);" id="msAvgScore">—</b></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:11px 13px;border-radius:var(--r);"><span style="font-size:13px;color:var(--muted);">Best Domain</span><b id="msBestDomain">—</b></div>
+
             <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:11px 13px;border-radius:var(--r);"><span style="font-size:13px;color:var(--muted);">Improvement</span><b style="color:var(--success);" id="msImprovement">—</b></div>
             <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:11px 13px;border-radius:var(--r);"><span style="font-size:13px;color:var(--muted);">Class Code</span><b style="color:var(--primary);" id="statsClassCode">SYMCA</b></div>
           </div>

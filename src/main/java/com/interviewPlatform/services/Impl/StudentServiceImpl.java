@@ -109,9 +109,6 @@ public class StudentServiceImpl implements StudentService {
         if (request.cgpa() != null) {
             student.setCgpa(request.cgpa());
         }
-        if (request.about() != null) {
-            student.setAbout(request.about());
-        }
         if (request.skills() != null) {
             student.setSkills(request.skills());
         }
@@ -159,7 +156,6 @@ public class StudentServiceImpl implements StudentService {
                 student.getPhone(),
                 student.getStudentClass(),
                 student.getCgpa(),
-                student.getAbout(),
                 student.getSkills(),
                 student.getInstitute() != null ? student.getInstitute().getId() : null,
                 student.getInstitute() != null ? student.getInstitute().getInstituteName() : null,

@@ -138,11 +138,11 @@
   .prog-bg{height:7px;background:var(--border);border-radius:10px;overflow:hidden;}
   .prog-fill{height:100%;border-radius:10px;transition:width .8s ease;}
   /* SLOT SCROLL */
-  .apply-grid{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;}
-  .apply-grid::-webkit-scrollbar{height:5px;}
+  .apply-grid{display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-bottom:8px;max-height:600px;}
+  .apply-grid::-webkit-scrollbar{width:5px;}
   .apply-grid::-webkit-scrollbar-track{background:var(--bg);border-radius:10px;}
   .apply-grid::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px;}
-  .apply-card{flex:0 0 220px;scroll-snap-align:start;border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px;transition:var(--tr);background:var(--card);}
+  .apply-card{border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px;transition:var(--tr);background:var(--card);}
   .apply-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,148,136,.1);}
   .apply-card.applied{border-color:#BBF7D0;background:#F0FDF4;}
   .ac-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:17px;margin-bottom:10px;}
@@ -248,7 +248,7 @@
   }
   @media(max-width:560px){
     .stat-grid{grid-template-columns:1fr 1fr!important;}
-    .apply-card{flex:0 0 190px;}
+    .apply-card{}
     .content-body{padding:12px;}
     .card-header{flex-direction:column;align-items:flex-start;}
     header{height:56px;}

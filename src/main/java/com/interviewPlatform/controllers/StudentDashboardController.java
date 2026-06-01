@@ -115,7 +115,7 @@ public class StudentDashboardController {
             student.getStudentClass(),
             student.getDepartment() != null ? student.getDepartment().getName() : "",
             student.getInstitute() != null ? student.getInstitute().getInstituteName() : "",
-            student.getAbout(), student.getSkills(), student.getCgpa(),
+            student.getSkills(), student.getCgpa(),
             interviewItems,
             resumeFileName,
             resumeUrl,
@@ -142,11 +142,16 @@ public ResponseEntity<?> getAvailableInterviews(Authentication auth) {
             )
         );
 
-        // After finding requests, add this filter:
-        String studentDeptName = student.getDepartment() != null ? student.getDepartment().getName() : null;
-        if (studentDeptName != null) {
+        // Filter by Domain: check if any of the student's skills match the interview request's expertise
+        List<String> studentSkills = student.getSkills() != null ? student.getSkills() : List.of();
+        if (!studentSkills.isEmpty()) {
             requests = requests.stream()
-                .filter(r -> studentDeptName.equalsIgnoreCase(r.getDepartmentName()))
+                .filter(r -> {
+                    List<String> reqExpertise = r.getExpertise() != null ? r.getExpertise() : List.of();
+                    return studentSkills.stream().anyMatch(skill -> 
+                        reqExpertise.stream().anyMatch(exp -> exp.equalsIgnoreCase(skill))
+                    );
+                })
                 .toList();
         }
 
@@ -158,7 +163,10 @@ public ResponseEntity<?> getAvailableInterviews(Authentication auth) {
         m.put("departmentName", r.getDepartmentName());
         m.put("expertise", r.getExpertise());
         m.put("scheduledDate", r.getScheduledDate());
-        m.put("scheduledVenue", r.getScheduledVenue());
+        String venue = (r.getScheduledVenue() != null && !r.getScheduledVenue().isBlank()) 
+                       ? r.getScheduledVenue() 
+                       : (r.getInstitute() != null ? r.getInstitute().getAddress() : "");
+        m.put("scheduledVenue", venue);
         m.put("meetingLink", r.getMeetingLink());
         m.put("status", r.getStatus().name());
         m.put("contactPerson", r.getContactPerson());

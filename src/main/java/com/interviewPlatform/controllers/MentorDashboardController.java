@@ -83,7 +83,6 @@ public class MentorDashboardController {
                     s.getPhone(),
                     s.getStudentClass(),
                     s.getCgpa(),
-                    s.getAbout(),
                     s.getSkills(),
                     s.getInstitute() != null ? s.getInstitute().getId() : null,
                     s.getInstitute() != null ? s.getInstitute().getInstituteName() : null,

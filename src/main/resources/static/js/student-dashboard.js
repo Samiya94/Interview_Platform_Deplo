@@ -182,8 +182,6 @@ function initStudentUI() {
   updateClassCode();
 
   setVal('pf_projects', STUDENT.projects || DASHBOARD_STATS && DASHBOARD_STATS.projects || '');
-  var ab = document.getElementById('pf_about');
-  if (ab) ab.value = STUDENT.about || '';
   var scc= document.getElementById('statsClassCode'); if(scc) scc.textContent = cls;
 
   fillDashboardStatCards();
@@ -765,9 +763,9 @@ function renderAPISlotGrid(containerId, slotsOverride) {
         d.className = 'apply-card' + (applied ? ' applied' : '');
         d.innerHTML =
             '<div class="ac-icon" style="background:#EFF6FF;color:#1E3A8A;"><i class="fa-solid fa-microphone-lines"></i></div>' +
-            '<div class="ac-title">' + escHtml(s.topic) + '</div>' +
+            '<div class="ac-title">' + (s.expertise ? escHtml(s.expertise) : escHtml(s.topic)) + '</div>' +
             '<div class="ac-meta"><i class="fa-solid fa-calendar"></i><b>' + escHtml(s.dateTime) + '</b></div>' +
-            (s.expertise ? '<div class="ac-meta"><i class="fa-solid fa-tags"></i><b>' + escHtml(s.expertise) + '</b></div>' : '') +
+            '<div class="ac-meta"><i class="fa-solid fa-building"></i><b>' + escHtml(s.topic) + '</b></div>' +
             (s.venue ? '<div class="ac-meta"><i class="fa-solid fa-location-dot"></i><b>' + escHtml(s.venue) + '</b></div>' : '') +
             (applied
                 ? '<button class="btn" style="width:100%;justify-content:center;background:#DCFCE7;color:#166534;border:1.5px solid #86EFAC;margin-top:2px;" disabled><i class="fa-solid fa-check"></i> Applied!</button>'
@@ -1093,16 +1091,16 @@ function updateClassCode(){
   var ps=document.getElementById('phSub');if(ps)ps.textContent=code+' · '+(STUDENT.department||'Student')+' · '+(STUDENT.instituteName||'Institute');
 }
 function saveAcademic(){
-  var ye=document.getElementById('pf_year'),de=document.getElementById('pf_degree'),ab=document.getElementById('pf_about');
+  var ye=document.getElementById('pf_year'),de=document.getElementById('pf_degree');
   STUDENT.skills=getSkills();
   var degVal=resolveProfileDegree();
   if(de&&de.value==='Other'&&!degVal){showToast('Please enter your degree.','warn');return;}
   STUDENT.year=ye?ye.value:STUDENT.year;STUDENT.degree=degVal;STUDENT.class=STUDENT.year+STUDENT.degree;
   var p = document.getElementById('pf_projects');
   STUDENT.projects = p ? p.value.trim() : '';
-  STUDENT.about = ab ? ab.value : STUDENT.about;
+
   secureFetch('/api/students/me',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    studentClass:STUDENT.class,cgpa:null,about:STUDENT.about||'',skills:STUDENT.skills||[],
+    studentClass:STUDENT.class,cgpa:null,skills:STUDENT.skills||[],
     projects:STUDENT.projects
   })})
       .then(function(res){if(!res.ok)throw new Error();try{localStorage.setItem('currentStudent',JSON.stringify(STUDENT));}catch(e){}updateClassCode();showToast('Academic details saved!');})

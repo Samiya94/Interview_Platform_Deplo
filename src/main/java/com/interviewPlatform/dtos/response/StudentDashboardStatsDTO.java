@@ -15,7 +15,6 @@ public record StudentDashboardStatsDTO(
     String studentClass,
     String departmentName,
     String instituteName,
-    String about,
     List<String> skills,
     Double cgpa,
     List<StudentInterviewItemDTO> interviews,
