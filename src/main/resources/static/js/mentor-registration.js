@@ -10,7 +10,6 @@ const TPO_KEY   = 'tpoCoordinators_' + instId;
 /* ── LOAD INSTITUTE INFO ── */
 async function loadInstituteInfo() {
   try {
-    const token = getToken();
 
     const res = await fetch(`/api/institutes/${instId}/public`);
 
