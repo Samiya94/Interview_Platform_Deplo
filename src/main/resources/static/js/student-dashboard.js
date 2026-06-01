@@ -583,14 +583,13 @@ function renderSlotGrid(cId) {
 
 function buildSlotCardHTML(s) {
   var applied = appliedSlots[s.id];
-  return '<div class="ac-icon" style="background:#EFF6FF;color:#1E3A8A;"><i class="fa-solid fa-microphone-lines"></i></div>'+
-    '<div class="ac-title">'+escHtml(s.topic)+'</div>'+
+  return '<div style="margin-bottom:8px;"><span style="background:#EFF6FF;color:#1E3A8A;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;"><i class="fa-solid fa-tags" style="margin-right:4px;"></i>' + (s.expertise ? escHtml(s.expertise) : 'General') + '</span></div>' +
+    '<div class="ac-title" style="margin-top:0;">'+escHtml(s.topic)+'</div>'+
     '<div class="ac-meta"><i class="fa-solid fa-calendar"></i><b>'+escHtml(s.dateTime)+'</b></div>'+
-    (s.expertise?'<div class="ac-meta"><i class="fa-solid fa-tags"></i><b>'+escHtml(s.expertise)+'</b></div>':'')+
     (s.contactPerson?'<div class="ac-meta"><i class="fa-solid fa-user-tie"></i><b>'+escHtml(s.contactPerson)+'</b></div>':'')+
     (applied
-      ?'<button class="btn" style="width:100%;justify-content:center;background:#DCFCE7;color:#166534;border:1.5px solid #86EFAC;margin-top:2px;" disabled><i class="fa-solid fa-check"></i> Applied!</button>'
-      :'<button class="btn btn-s" style="width:100%;justify-content:center;margin-top:2px;" onclick="applySlotById(this.getAttribute(\'data-id\'), this.getAttribute(\'data-topic\'), this.getAttribute(\'data-dt\'), this.getAttribute(\'data-cp\'))" data-id="'+s.id+'" data-topic="'+escHtml(s.topic)+'" data-dt="'+escHtml(s.dateTime)+'" data-cp="'+escHtml(s.contactPerson||'')+'"><i class="fa-solid fa-check"></i> Apply</button>');
+      ?'<button class="btn" style="width:100%;justify-content:center;background:#DCFCE7;color:#166534;border:1.5px solid #86EFAC;margin-top:8px;" disabled><i class="fa-solid fa-check"></i> Applied!</button>'
+      :'<button class="btn btn-s" style="width:100%;justify-content:center;margin-top:8px;" onclick="applySlotById(this.getAttribute(\'data-id\'), this.getAttribute(\'data-topic\'), this.getAttribute(\'data-dt\'), this.getAttribute(\'data-cp\'))" data-id="'+s.id+'" data-topic="'+escHtml(s.topic)+'" data-dt="'+escHtml(s.dateTime)+'" data-cp="'+escHtml(s.contactPerson||'')+'"><i class="fa-solid fa-check"></i> Apply</button>');
 }
 
 // ── Profile Reminder Modal ────────────────────────────────────────────────────
