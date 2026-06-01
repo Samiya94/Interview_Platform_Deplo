@@ -148,8 +148,11 @@ public ResponseEntity<?> getAvailableInterviews(Authentication auth) {
             requests = requests.stream()
                 .filter(r -> {
                     List<String> reqExpertise = r.getExpertise() != null ? r.getExpertise() : List.of();
+                    if (reqExpertise.isEmpty()) return true;
                     return studentSkills.stream().anyMatch(skill -> 
-                        reqExpertise.stream().anyMatch(exp -> exp.equalsIgnoreCase(skill))
+                        reqExpertise.stream().anyMatch(exp -> 
+                            exp.toLowerCase().contains(skill.toLowerCase()) || skill.toLowerCase().contains(exp.toLowerCase())
+                        )
                     );
                 })
                 .toList();
