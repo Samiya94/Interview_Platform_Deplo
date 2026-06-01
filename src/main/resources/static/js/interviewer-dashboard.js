@@ -440,8 +440,8 @@ function renderLiveStudent() {
   const resumeLabel = s.resumeUrl ? friendlyResumeName(s.resumeFileName) : 'No resume uploaded';
   setText('live-resume-name', resumeLabel);
   setText('live-resume-name2', resumeLabel);
-  mountResumeEmbed('liveResumeEmbed', s.resumeUrl, s.resumeFileName, { height: '460px' });
-  mountResumeEmbed('liveResumeEmbed2', s.resumeUrl, s.resumeFileName, { height: '360px' });
+  mountResumeEmbed('liveResumeEmbed', s.resumeUrl, s.resumeFileName, { height: '100%' });
+  mountResumeEmbed('liveResumeEmbed2', s.resumeUrl, s.resumeFileName, { height: '100%' });
   const projectsHtml = renderProjectDetailsHtml(s);
   const projEl = document.getElementById('info-projects');
   if (projEl) projEl.innerHTML = projectsHtml;
@@ -491,7 +491,7 @@ function renderProfileReviews() {
   const list = document.getElementById('reviewList');
   if (!list) return;
   if (!reviews.length) {
-    list.innerHTML = 'No reviews yet.';
+    list.innerHTML = 'No feedback yet.';
     setText('reviewsAvgBadge', '—');
     setText('reviewsPositivePct', '—');
     setText('reviewsCount', '0');
@@ -694,10 +694,7 @@ async function submitEvalAndNext() {
   APP.completed[s.key] = true;
   localStorage.setItem('interviewerCompleted', JSON.stringify(APP.completed));
   s.evaluationSubmitted = true;
-  const comment = (payload.remarks || payload.strengths || 'Interview completed successfully.').trim();
-  APP.reviews.unshift({ student: s.name, institute: s.institute, domain: s.domain, date: new Date().toLocaleDateString(), comment: comment, rating: mapPerformanceToRating(perf) });
-  APP.reviews = APP.reviews.slice(0, 25);
-  localStorage.setItem('interviewerReviews', JSON.stringify(APP.reviews));
+  // Student feedback is not fetched natively yet, so APP.reviews remains empty.
   clearInterval(APP.timerInterval);
   APP.seconds = 0;
   setText('liveClock', '00:00:00');

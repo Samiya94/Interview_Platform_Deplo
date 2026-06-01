@@ -115,7 +115,7 @@ async function renderStudentsTable() {
             <td style="font-size:12px;color:var(--muted);">${skills}</td>
             <td>
                 <button class="btn btn-ghost btn-sm"
-                    onclick="openStudentDetailFromData(${safeId},'${safeName}','${cls}','${safeEmail}','${skills}','${safeResume}','${safeResumeFile}')">
+                    onclick="openStudentDetailFromData(${safeId},'${safeName}','${cls}','${safeEmail}','${skills}','${safeResume}','${safeResumeFile}','${s.profilePhotoUrl || ''}')">
                     <i class="fa-solid fa-eye"></i> View
                 </button>
             </td>
@@ -201,7 +201,7 @@ function renderReportStudentTable() {
             <td><span class="badge bg-gray"><i class="fa-solid fa-clock"></i> Not Evaluated</span></td>
             <td>
                 <button class="btn btn-ghost btn-sm"
-                    onclick="openStudentDetailFromData(${safeId},'${safeName}','${cls}','${safeEmail}','${skills}','${safeResume}','${safeResumeFile}')">
+                    onclick="openStudentDetailFromData(${safeId},'${safeName}','${cls}','${safeEmail}','${skills}','${safeResume}','${safeResumeFile}','${s.profilePhotoUrl || ''}')">
                     <i class="fa-solid fa-eye"></i> View
                 </button>
             </td>
@@ -257,7 +257,7 @@ function mentorSwitchTab(tabEl, panelId) {
 }
 
 function mentorPerfBadge(perf) {
-    if (!perf) return '—';
+    if (!perf) return '<span class="badge bg-gray">Not Evaluated</span>';
     // Remove any non-alphabetic characters (like emojis) and trim before mapping
     const p = perf.replace(/[^a-zA-Z]/g, '').trim().toUpperCase();
     const map = {
@@ -267,7 +267,7 @@ function mentorPerfBadge(perf) {
         'POOR':      { bg: '#FEE2E2', color: '#DC2626', icon: 'fa-thumbs-down',  label: 'Poor' },
     };
     const s = map[p];
-    if (!s) return '—';
+    if (!s) return '<span class="badge bg-gray">Not Evaluated</span>';
     return `<span style="display:inline-flex;align-items:center;gap:5px;background:${s.bg};color:${s.color};font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;">
         <i class="fa-solid ${s.icon}"></i> ${s.label}
     </span>`;
@@ -301,7 +301,7 @@ function closeMentorVideo() {
     if (lb) lb.style.display = 'none';
 }
 
-async function openStudentDetailFromData(id, name, cls, email, skills, resumeUrl, resumeFileName) {
+async function openStudentDetailFromData(id, name, cls, email, skills, resumeUrl, resumeFileName, profilePhotoUrl) {
     // Reset to Overview tab
     document.querySelectorAll('#studentDetailModal .modal-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
     document.querySelectorAll('#studentDetailModal .modal-tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
@@ -313,14 +313,28 @@ async function openStudentDetailFromData(id, name, cls, email, skills, resumeUrl
         `<span><i class="fa-solid fa-graduation-cap" style="color:var(--secondary);margin-right:4px;"></i>${combined}</span>` +
         `<span><i class="fa-solid fa-envelope" style="color:var(--secondary);margin-right:4px;"></i>${email || '—'}</span>`;
 
-    document.getElementById('modalBanner').innerHTML =
-        `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
-            <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">${getInitials(name)}</div>
-            <div>
-                <div style="font-size:16px;font-weight:800;color:#fff;">${name}</div>
-                <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${combined}</div>
-            </div>
-        </div>`;
+    if (profilePhotoUrl && profilePhotoUrl !== 'null' && profilePhotoUrl.trim() !== '') {
+        let url = profilePhotoUrl.startsWith('http') || profilePhotoUrl.startsWith('/') ? profilePhotoUrl : '/' + profilePhotoUrl;
+        document.getElementById('modalBanner').innerHTML =
+            `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
+                <div style="width:46px;height:46px;border-radius:50%;flex-shrink:0;">
+                    <img src="${url}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,.35);">
+                </div>
+                <div>
+                    <div style="font-size:16px;font-weight:800;color:#fff;">${name}</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${combined}</div>
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('modalBanner').innerHTML =
+            `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
+                <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">${getInitials(name)}</div>
+                <div>
+                    <div style="font-size:16px;font-weight:800;color:#fff;">${name}</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${combined}</div>
+                </div>
+            </div>`;
+    }
 
     document.getElementById('modalScore').textContent = '…';
     document.getElementById('modalAttended').textContent = '…';
@@ -387,9 +401,9 @@ async function openStudentDetailFromData(id, name, cls, email, skills, resumeUrl
                     ${score}
                 </div>
                 <div style="font-size:12px;color:var(--muted);margin-bottom:6px;"><i class="fa-solid fa-user" style="margin-right:4px;"></i>${r.interviewerName || '—'}</div>
-                ${ev.strengths ? `<div style="font-size:13px;margin-bottom:4px;"><b style="color:var(--success);">Strengths:</b> ${ev.strengths}</div>` : ''}
-                ${ev.improvements ? `<div style="font-size:13px;margin-bottom:4px;"><b style="color:#D97706;">Improvements:</b> ${ev.improvements}</div>` : ''}
-                ${ev.remarks ? `<div style="font-size:13px;"><b style="color:var(--muted);">Remarks:</b> ${ev.remarks}</div>` : ''}
+                ${ev.strengths ? `<div style="font-size:13px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;"><b style="color:var(--success);">Strengths:</b> ${ev.strengths}</div>` : ''}
+                ${ev.improvements ? `<div style="font-size:13px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;"><b style="color:#D97706;">Improvements:</b> ${ev.improvements}</div>` : ''}
+                ${ev.remarks ? `<div style="font-size:13px;white-space:pre-wrap;word-break:break-word;"><b style="color:var(--muted);">Remarks:</b> ${ev.remarks}</div>` : ''}
             </div>`;
         }).join('');
     }

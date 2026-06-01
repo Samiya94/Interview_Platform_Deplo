@@ -17,6 +17,7 @@ public record StudentFeedbackReportDTO(
         InterviewEvaluationResponseDTO evaluation,
         boolean hasStudentRating,
         Integer studentRating,
-        String studentRatingFeedback
+        String studentRatingFeedback,
+        String profilePhotoUrl
 ) {
 }

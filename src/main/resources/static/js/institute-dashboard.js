@@ -634,7 +634,7 @@ function loadDeptDetail(name,coord,initials,email,phone,desg,color){
                     <td style="padding:9px 10px;font-size:12px;">${sPhone}</td>
                     <td style="padding:9px 10px;">
                       <button class="btn btn-ghost btn-sm"
-                        onclick="openInstStudentDetail(${s.id||0},'${safeName}','${sCls}','${safeEmail}','${safeSkills}','${sPhone}','${name}','${safeResume}','${safeResumeFile}')">
+                        onclick="openInstStudentDetail(${s.id||0},'${safeName}','${sCls}','${safeEmail}','${safeSkills}','${sPhone}','${name}','${safeResume}','${safeResumeFile}','${s.profilePhotoUrl || ''}')">
                         <i class="fa-solid fa-eye"></i> View
                       </button>
                     </td>
@@ -1586,7 +1586,7 @@ function instFmtDateTime(dt) {
 }
 
 function instPerfBadge(perf) {
-  if (!perf) return '—'; // no interview yet — just show a dash, not a badge
+  if (!perf) return '<span class="badge bg-gray">Not Evaluated</span>';
   const p = perf.replace(/[^a-zA-Z]/g, '').trim().toUpperCase();
   const map = {
     'EXCELLENT': { bg: '#DCFCE7', color: '#15803D', icon: 'fa-star',         label: 'Excellent' },
@@ -1616,7 +1616,7 @@ function closeInstVideo() {
   if (lb) lb.style.display = 'none';
 }
 
-async function openInstStudentDetail(id, name, cls, email, skills, phone, deptName, resumeUrl, resumeFileName) {
+async function openInstStudentDetail(id, name, cls, email, skills, phone, deptName, resumeUrl, resumeFileName, profilePhotoUrl) {
   // Reset to Overview tab
   document.querySelectorAll('#instStudentDetailModal .modal-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
   document.querySelectorAll('#instStudentDetailModal .modal-tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
@@ -1632,14 +1632,28 @@ async function openInstStudentDetail(id, name, cls, email, skills, phone, deptNa
     `<span><i class="fa-solid fa-graduation-cap" style="color:var(--secondary);margin-right:4px;"></i>${combined}</span>` +
     `<span><i class="fa-solid fa-envelope" style="color:var(--secondary);margin-right:4px;"></i>${email || '—'}</span>`;
 
-  document.getElementById('instModalBanner').innerHTML =
-    `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
-      <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">${instGetInitials(name)}</div>
-      <div>
-        <div style="font-size:16px;font-weight:800;color:#fff;">${name}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${combined}</div>
-      </div>
-    </div>`;
+  if (profilePhotoUrl && profilePhotoUrl !== 'null' && profilePhotoUrl.trim() !== '') {
+    let url = profilePhotoUrl.startsWith('http') || profilePhotoUrl.startsWith('/') ? profilePhotoUrl : '/' + profilePhotoUrl;
+    document.getElementById('instModalBanner').innerHTML =
+      `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
+        <div style="width:46px;height:46px;border-radius:50%;flex-shrink:0;">
+          <img src="${url}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,.35);">
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#fff;">${name}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${combined}</div>
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('instModalBanner').innerHTML =
+      `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
+        <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">${instGetInitials(name)}</div>
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#fff;">${name}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${combined}</div>
+        </div>
+      </div>`;
+  }
 
   // Placeholders while loading
   document.getElementById('instModalScore').textContent = '…';
@@ -1711,9 +1725,9 @@ async function openInstStudentDetail(id, name, cls, email, skills, phone, deptNa
           ${score}
         </div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:6px;"><i class="fa-solid fa-user" style="margin-right:4px;"></i>${r.interviewerName || '—'}</div>
-        ${ev.strengths    ? `<div style="font-size:13px;margin-bottom:4px;"><b style="color:var(--success);">Strengths:</b> ${ev.strengths}</div>` : ''}
-        ${ev.improvements ? `<div style="font-size:13px;margin-bottom:4px;"><b style="color:#D97706;">Improvements:</b> ${ev.improvements}</div>` : ''}
-        ${ev.remarks      ? `<div style="font-size:13px;"><b style="color:var(--muted);">Remarks:</b> ${ev.remarks}</div>` : ''}
+        ${ev.strengths    ? `<div style="font-size:13px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;"><b style="color:var(--success);">Strengths:</b> ${ev.strengths}</div>` : ''}
+        ${ev.improvements ? `<div style="font-size:13px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;"><b style="color:#D97706;">Improvements:</b> ${ev.improvements}</div>` : ''}
+        ${ev.remarks      ? `<div style="font-size:13px;white-space:pre-wrap;word-break:break-word;"><b style="color:var(--muted);">Remarks:</b> ${ev.remarks}</div>` : ''}
       </div>`;
     }).join('');
   }

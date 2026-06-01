@@ -108,7 +108,7 @@ public class StudentFeedbackServiceImpl implements StudentFeedbackService {
 
         // Domain name: first expertise entry from the interview request
         var expertise = req.getExpertise();
-        String domainName = (expertise != null && !expertise.isEmpty()) ? expertise.get(0) : null;
+        String domainName = (expertise != null && !expertise.isEmpty()) ? String.join(", ", expertise) : null;
 
         return new StudentFeedbackReportDTO(
                 app.getId(),
@@ -124,7 +124,8 @@ public class StudentFeedbackServiceImpl implements StudentFeedbackService {
                 evalDto,
                 ratingOpt.isPresent(),
                 ratingOpt.map(StudentInterviewerRating::getRating).orElse(null),
-                ratingOpt.map(StudentInterviewerRating::getFeedback).orElse(null)
+                ratingOpt.map(StudentInterviewerRating::getFeedback).orElse(null),
+                app.getStudent().getProfilePhotoUrl() != null ? "/uploads/" + app.getStudent().getProfilePhotoUrl() : null
         );
     }
 

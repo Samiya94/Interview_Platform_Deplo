@@ -176,7 +176,7 @@ public class StudentApplicationServiceImpl implements StudentApplicationService 
             app.getStudent().getCgpa(),
             app.getStudent().getStudentClass(),
             req.getId(),
-            req.getDepartmentName(),
+            (req.getExpertise() != null && !req.getExpertise().isEmpty()) ? String.join(", ", req.getExpertise()) : req.getDepartmentName(),
             req.getStatus().name(),
             app.getStatus().name(),
             app.getAppliedAt(),
@@ -187,7 +187,8 @@ public class StudentApplicationServiceImpl implements StudentApplicationService 
             app.getAssignedInterviewer() != null
                     ? app.getAssignedInterviewer().getFullName()
                     : (req.getAssignedInterviewer() != null ? req.getAssignedInterviewer().getFullName() : null),
-            app.getVideoUrl() != null && !app.getVideoUrl().isBlank() ? "/uploads/" + app.getVideoUrl() : null
+            app.getVideoUrl() != null && !app.getVideoUrl().isBlank() ? "/uploads/" + app.getVideoUrl() : null,
+            app.getStudent().getProfilePhotoUrl() != null ? "/uploads/" + app.getStudent().getProfilePhotoUrl() : null
         );
     }
 }
