@@ -243,4 +243,10 @@ public class InterviewerDashboardController {
     public ResponseEntity<?> uploadResume(Authentication authentication, @RequestPart("resume") MultipartFile resumeFile) {
         return ResponseEntity.ok(interviewerService.uploadMyResume(authentication.getName(), resumeFile));
     }
+
+    @PreAuthorize("hasRole('INTERVIEWER')")
+    @PostMapping(value = "/me/photo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadPhoto(Authentication authentication, @RequestPart("photo") MultipartFile photoFile) {
+        return ResponseEntity.ok(interviewerService.uploadMyProfilePhoto(authentication.getName(), photoFile));
+    }
 }

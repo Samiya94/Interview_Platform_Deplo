@@ -1049,7 +1049,34 @@ function viewStudentResume() {
   if (frame) frame.src = absUrl + '#toolbar=1&navpanes=0';
   openOverlay('resumeViewerModal');
 }
-function handleProfilePic(input) { if (!input.files || !input.files[0]) return; const reader = new FileReader(); reader.onload = function (e) { document.getElementById('profilePicLg').innerHTML = `<img src="${e.target.result}" alt="Profile">`; document.getElementById('headerAvatar').innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }; reader.readAsDataURL(input.files[0]); showToast('Profile photo updated!'); }
+async function handleProfilePic(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    document.getElementById('profilePicLg').innerHTML = `<img src="${e.target.result}" alt="Profile">`;
+    document.getElementById('headerAvatar').innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  };
+  reader.readAsDataURL(file);
+
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  try {
+    const res = await fetch('/api/interviewer/me/photo', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: formData
+    });
+    if (res.ok) {
+      showToast('Profile photo updated!');
+    } else {
+      showToast('Profile photo upload failed', 'error');
+    }
+  } catch (e) {
+    showToast('Profile photo upload error', 'error');
+  }
+}
 async function handleCvUpload(input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];

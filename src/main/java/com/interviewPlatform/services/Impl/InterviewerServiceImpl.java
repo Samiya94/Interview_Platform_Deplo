@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +37,7 @@ public class InterviewerServiceImpl implements InterviewerService {
     }
 
     @Override
+    @Transactional
     public Map<String, String> uploadMyResume(String email, MultipartFile resumeFile) {
         if (resumeFile == null || resumeFile.isEmpty()) {
             throw new RuntimeException("File is empty");
@@ -62,7 +64,38 @@ public class InterviewerServiceImpl implements InterviewerService {
             res.put("resumeFileName", resumeFileName);
             return res;
         } catch (Exception e) {
-            throw new RuntimeException("Resume upload failed", e);
+            throw new RuntimeException("Failed to upload resume", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, String> uploadMyProfilePhoto(String email, MultipartFile photoFile) {
+        if (photoFile == null || photoFile.isEmpty()) {
+            throw new RuntimeException("Photo file is empty");
+        }
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Interviewer interviewer = interviewerRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Interviewer profile not found"));
+
+        try {
+            String photoFileName = System.currentTimeMillis() + "_photo_" +
+                    photoFile.getOriginalFilename();
+
+            String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+            if (!dir.endsWith("/")) dir += "/";
+            Path photoPath = Paths.get(dir + "profiles/" + photoFileName);
+            Files.createDirectories(photoPath.getParent());
+            Files.write(photoPath, photoFile.getBytes());
+
+            interviewer.setProfilePhotoUrl("/uploads/profiles/" + photoFileName);
+            interviewerRepository.save(interviewer);
+
+            Map<String, String> res = new HashMap<>();
+            res.put("profilePhotoUrl", "/uploads/profiles/" + photoFileName);
+            return res;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload profile photo", e);
         }
     }
 }
