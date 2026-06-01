@@ -112,9 +112,7 @@ public class InterviewerDashboardController {
             // Extra profile info
             m.put("skills", a.getStudent().getSkills());
             m.put("about", a.getStudent().getAbout());
-            m.put("projectName", a.getStudent().getProjectName());
-            m.put("projectBrief", a.getStudent().getProjectBrief());
-            m.put("projectGithub", a.getStudent().getProjectGithub());
+            m.put("projects", a.getStudent().getProjects());
             m.put("profilePhotoUrl", a.getStudent().getProfilePhotoUrl());
             m.put("evaluationSubmitted", evaluationRepository.existsByApplicationId(a.getId()));
             // ── NEW: include video URL if a video has been uploaded for this student ──

@@ -21,9 +21,7 @@ public record StudentDashboardStatsDTO(
     List<StudentInterviewItemDTO> interviews,
     String resumeFileName,
     String resumeUrl,
-    String projectName,
-    String projectBrief,
-    String projectGithub
+    String projects
 ) {
     public record StudentInterviewItemDTO(
         Long applicationId,
