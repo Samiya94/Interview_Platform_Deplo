@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,9 @@ public class InterviewerServiceImpl implements InterviewerService {
     private final AuthService authService;
     private final UserRepository userRepository;
     private final InterviewerRepository interviewerRepository;
+
+    @Value("${file.upload.dir:uploads/}")
+    private String uploadDir;
 
     @Override
     public String registerInterviewer(InterviewerRegisterRequest dto) {
@@ -44,7 +48,9 @@ public class InterviewerServiceImpl implements InterviewerService {
             String resumeFileName = System.currentTimeMillis() + "_resume_" +
                     resumeFile.getOriginalFilename();
 
-            Path resumePath = Paths.get("uploads/resumes/" + resumeFileName);
+            String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+            if (!dir.endsWith("/")) dir += "/";
+            Path resumePath = Paths.get(dir + "resumes/" + resumeFileName);
             Files.createDirectories(resumePath.getParent());
             Files.write(resumePath, resumeFile.getBytes());
 

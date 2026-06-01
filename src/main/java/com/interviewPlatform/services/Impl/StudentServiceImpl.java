@@ -21,6 +21,7 @@ import com.interviewPlatform.repositories.UserRepository;
 import com.interviewPlatform.services.InstituteService;
 import com.interviewPlatform.services.StudentService;
 import com.interviewPlatform.dtos.request.ChangePasswordRequestDTO;
+import org.springframework.beans.factory.annotation.Value;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,9 @@ public class StudentServiceImpl implements StudentService {
     private final InstituteService instituteService;
     private final PasswordEncoder passwordEncoder;
     private final com.interviewPlatform.repositories.StudentApplicationRepository applicationRepository;
+
+    @Value("${file.upload.dir:uploads/}")
+    private String uploadDir;
 
     @Override
     @Transactional
@@ -224,7 +228,8 @@ public StudentResumeResponseDTO uploadMyResume(String email, MultipartFile resum
     String fileName = System.currentTimeMillis() + "_" + original;
 
     try {
-        var uploadsDir = java.nio.file.Paths.get("uploads");
+        String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+        var uploadsDir = java.nio.file.Paths.get(dir);
         java.nio.file.Files.createDirectories(uploadsDir);
         var target = uploadsDir.resolve(fileName);
         java.nio.file.Files.write(target, resumeFile.getBytes());

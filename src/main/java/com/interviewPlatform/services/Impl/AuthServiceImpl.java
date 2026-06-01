@@ -21,7 +21,9 @@ import com.interviewPlatform.entities.Domain;
 import com.interviewPlatform.repositories.InstituteRepository;
 import com.interviewPlatform.repositories.InterviewerRepository;
 import com.interviewPlatform.repositories.UserRepository;
+import com.interviewPlatform.repositories.UserRepository;
 import com.interviewPlatform.services.AuthService;
+import org.springframework.beans.factory.annotation.Value;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +36,9 @@ public class AuthServiceImpl implements AuthService{
     private final InterviewerRepository interviewerRepository;
     private final DomainRepository domainRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${file.upload.dir:uploads/}")
+    private String uploadDir;
 
 
 
@@ -128,7 +133,9 @@ public class AuthServiceImpl implements AuthService{
                 String fileName = System.currentTimeMillis() + "_" +
                         request.profilePhoto().getOriginalFilename();
 
-                Path path = Paths.get("uploads/profiles/" + fileName);
+                String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+                if (!dir.endsWith("/")) dir += "/";
+                Path path = Paths.get(dir + "profiles/" + fileName);
                 Files.createDirectories(path.getParent());
                 Files.write(path, request.profilePhoto().getBytes());
 
@@ -144,7 +151,9 @@ public class AuthServiceImpl implements AuthService{
                 String resumeFileName = System.currentTimeMillis() + "_resume_" +
                         request.resumeFile().getOriginalFilename();
 
-                Path resumePath = Paths.get("uploads/resumes/" + resumeFileName);
+                String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+                if (!dir.endsWith("/")) dir += "/";
+                Path resumePath = Paths.get(dir + "resumes/" + resumeFileName);
                 Files.createDirectories(resumePath.getParent());
                 Files.write(resumePath, request.resumeFile().getBytes());
 
