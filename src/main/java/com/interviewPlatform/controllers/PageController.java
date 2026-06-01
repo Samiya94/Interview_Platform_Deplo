@@ -5,11 +5,21 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import lombok.RequiredArgsConstructor;
+import com.interviewPlatform.repositories.InstituteRepository;
+import com.interviewPlatform.repositories.InterviewerRepository;
+
 @Controller
+@RequiredArgsConstructor
 public class PageController {
 
+    private final InstituteRepository instituteRepository;
+    private final InterviewerRepository interviewerRepository;
+
     @GetMapping("/")
-    public String home() {
+    public String home(Model model) {
+        model.addAttribute("institutes", instituteRepository.findAllWithDepartments());
+        model.addAttribute("interviewers", interviewerRepository.findAllWithSkills());
         return "index";
     }
 
