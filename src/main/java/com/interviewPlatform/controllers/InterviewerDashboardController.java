@@ -22,6 +22,7 @@ import com.interviewPlatform.repositories.InterviewEvaluationRepository;
 import com.interviewPlatform.repositories.InterviewRequestRepository;
 import com.interviewPlatform.repositories.InterviewerRepository;
 import com.interviewPlatform.repositories.StudentApplicationRepository;
+import com.interviewPlatform.services.InterviewerService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +35,7 @@ public class InterviewerDashboardController {
     private final InterviewRequestRepository interviewRequestRepository;
     private final StudentApplicationRepository applicationRepository;
     private final InterviewEvaluationRepository evaluationRepository;
+    private final InterviewerService interviewerService;
 
     @Value("${file.upload.dir:uploads/}")
     private String uploadDir;
@@ -234,5 +236,11 @@ public class InterviewerDashboardController {
         m.put("resumeUrl", (rawResume != null && !rawResume.isBlank()) ? rawResume : null);
         m.put("resumeFileName", rawResume);
         return ResponseEntity.ok(m);
+    }
+
+    @PreAuthorize("hasRole('INTERVIEWER')")
+    @PostMapping(value = "/me/resume", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadResume(Authentication authentication, @RequestPart("resume") MultipartFile resumeFile) {
+        return ResponseEntity.ok(interviewerService.uploadMyResume(authentication.getName(), resumeFile));
     }
 }

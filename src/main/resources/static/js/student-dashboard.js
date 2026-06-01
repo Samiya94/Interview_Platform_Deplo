@@ -3,13 +3,13 @@
    ============================================================ */
 
 function getAuthHeaders() {
-  var token = localStorage.getItem('accessToken');
+  var token = getToken();
   if (!token) return null;
   return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
 }
 
 function getAuthHeadersMultipart() {
-  var token = localStorage.getItem('accessToken');
+  var token = getToken();
   if (!token) return null;
   return { 'Authorization': 'Bearer ' + token };
 }
@@ -1487,5 +1487,6 @@ function showToast(msg,type){
   var c={success:['#DCFCE7','#166534'],warn:['#FEF3C7','#92400E'],error:['#FEE2E2','#991B1B']}[type]||['#DCFCE7','#166534'];
   var ico=type==='error'?'circle-xmark':type==='warn'?'triangle-exclamation':'circle-check';
   var t=document.createElement('div');t.className='toast';t.style.cssText='background:'+c[0]+';color:'+c[1]+';';
-  t.innerHTML='<i class="fa-solid fa-'+ico+'"></i>'+msg;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);
+  t.innerHTML='<i class="fa-solid fa-'+ico+'"></i>'+msg;document.body.appendChild(t);setTimeout(function(){t.remove();if(type==='success'){window.location.reload();}},1500);
 }
+

@@ -1,5 +1,5 @@
 function getToken() {
-    return localStorage.getItem("accessToken");
+    return getToken() || sessionStorage.getItem("accessToken");
 }
 
 function decodeJwtPayload(token) {
@@ -18,7 +18,7 @@ function decodeJwtPayload(token) {
 
 function getUserRole() {
     try {
-        const raw = localStorage.getItem("user");
+        const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
         if (!raw) return null;
         const user = JSON.parse(raw);
         const role = user?.role;
@@ -31,7 +31,7 @@ function getUserRole() {
 
 function getUserEmail() {
     try {
-        const raw = localStorage.getItem("user");
+        const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
         if (!raw) return null;
         const user = JSON.parse(raw);
         return user?.username;
@@ -80,12 +80,13 @@ async function refreshAccessToken() {
 }
 
 async function _doRefresh() {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
     if (!refreshToken) return false;
 
     // Refresh token is expired — no point calling the server
     if (isTokenExpiredStrict(refreshToken)) {
         localStorage.removeItem("refreshToken");
+        sessionStorage.removeItem("refreshToken");
         return false;
     }
 
@@ -98,19 +99,20 @@ async function _doRefresh() {
 
         if (res.ok) {
             const data = await res.json();
-            localStorage.setItem("accessToken", data.accessToken);
+            const storage = localStorage.getItem("refreshToken") ? localStorage : sessionStorage;
+            storage.setItem("accessToken", data.accessToken);
             if (data.refreshToken) {
-                localStorage.setItem("refreshToken", data.refreshToken);
+                storage.setItem("refreshToken", data.refreshToken);
             }
             // Keep user object in sync
             try {
-                const existingRaw = localStorage.getItem("user");
+                const existingRaw = storage.getItem("user");
                 const existing = existingRaw ? JSON.parse(existingRaw) : {};
                 const nextUser = {
                     username: data.email ?? data.username ?? existing?.username ?? null,
                     role: data.role ?? existing?.role ?? null
                 };
-                localStorage.setItem("user", JSON.stringify(nextUser));
+                storage.setItem("user", JSON.stringify(nextUser));
             } catch { /* ignore */ }
             return true;
         }
@@ -118,6 +120,8 @@ async function _doRefresh() {
         // Server rejected the refresh token — clear it so we don't loop
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("refreshToken");
         return false;
 
     } catch {
@@ -134,7 +138,7 @@ async function checkAuth(requiredRole) {
 
     // ── No access token: try to recover via refresh token ───────────────
     if (!token) {
-        const hasRefreshToken = !!localStorage.getItem("refreshToken");
+        const hasRefreshToken = !!(localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken"));
         if (!hasRefreshToken) {
             // Genuinely not logged in
             window.location.href = loginPath;
@@ -224,6 +228,7 @@ function logout() {
         });
     }
     localStorage.clear();
+    sessionStorage.clear();
     window.location.href = loginHref;
 }
 

@@ -46,7 +46,7 @@ function clearError() {
 }
 
 async function testDashboard() {
-  const token = localStorage.getItem("accessToken");
+  const token = getToken();
 
   if (!token) {
     console.error("No token found!");
@@ -116,19 +116,31 @@ async function handleLogin(event) {
 
     if (response.ok) {
       const data = await response.json();
-      // 🔐 Store tokens
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+      const rememberMe = document.getElementById('rememberMe').checked;
+      const storage = rememberMe ? localStorage : sessionStorage;
 
-        // 👤 Store user info
-        localStorage.setItem("user", JSON.stringify({
+      // 🔐 Store tokens
+      storage.setItem("accessToken", data.accessToken);
+      storage.setItem("refreshToken", data.refreshToken);
+
+      // 👤 Store user info
+      storage.setItem("user", JSON.stringify({
         // Backend returns `email` (not `username`)
         username: data.email ?? data.username ?? email,
         role: data.role
-        }));
-  // optional success message
-  showModal("Login successful", data.role);
-} else {
+      }));
+
+      // Immediate Redirect
+      const normalizedRole = data.role.toUpperCase();
+      const roleRedirectMap = {
+        STUDENT: "/student-dashboard",
+        INTERVIEWER: "/interviewer-dashboard",
+        INSTITUTE: "/institute-dashboard",
+        MENTOR: "/mentor-dashboard",
+        ADMIN: "/admin-dashboard"
+      };
+      window.location.href = roleRedirectMap[normalizedRole] || "/";
+    } else {
       const err = await extractErrorMessage(response);
       showError(err);
       document.getElementById('emailInput').classList.add('error');
@@ -149,38 +161,3 @@ async function handleLogin(event) {
 window.addEventListener('DOMContentLoaded', () => {
   // nothing to initialize
 });
-let redirectUrl = null;
-
-function showModal(message, role) {
-  document.getElementById("modalMessage").textContent = message;
-  document.getElementById("successModal").classList.add("show");
-
-  const normalizedRole = role.toUpperCase();
-
-    // All role redirects
-    const roleRedirectMap = {
-        STUDENT: "/student-dashboard",
-        INTERVIEWER: "/interviewer-dashboard",
-        INSTITUTE: "/institute-dashboard",
-        MENTOR: "/mentor-dashboard",
-        ADMIN: "/admin-dashboard"
-    };
-
-    redirectUrl = roleRedirectMap[normalizedRole] || "/";
-
-
-  setTimeout(() => {
-    if (redirectUrl) {
-      
-      window.location.href = redirectUrl;
-    }
-  }, 2000);
-}
-
-function closeModal() {
-  document.getElementById("successModal").classList.remove("show");
-
-  if (redirectUrl) {
-    window.location.href = redirectUrl;
-  }
-}

@@ -1,5 +1,5 @@
 function getAuthHeadersMultipart() {
-  const token = localStorage.getItem('accessToken');
+  const token = getToken();
   if (!token) return null;
   return { Authorization: 'Bearer ' + token };
 }
@@ -1050,14 +1050,51 @@ function viewStudentResume() {
   openOverlay('resumeViewerModal');
 }
 function handleProfilePic(input) { if (!input.files || !input.files[0]) return; const reader = new FileReader(); reader.onload = function (e) { document.getElementById('profilePicLg').innerHTML = `<img src="${e.target.result}" alt="Profile">`; document.getElementById('headerAvatar').innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }; reader.readAsDataURL(input.files[0]); showToast('Profile photo updated!'); }
-function handleCvUpload(input) { if (!input.files || !input.files[0]) return; const name = input.files[0].name; const el = document.getElementById('cvFileName'); setText('cvFileNameText', name + ' — ready to upload'); el.style.display = 'flex'; setText('cvName', name); setText('cvDate', new Date().toLocaleDateString()); document.getElementById('cvViewBtn').disabled = false; showToast('CV selected: ' + name); }
+async function handleCvUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const name = file.name;
+  const el = document.getElementById('cvFileName');
+  setText('cvFileNameText', 'Uploading ' + name + '...');
+  el.style.display = 'flex';
+  
+  const formData = new FormData();
+  formData.append('resume', file);
+  
+  try {
+    const res = await fetch('/api/interviewer/me/resume', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: formData
+    });
+    if (res.ok) {
+      setText('cvName', name);
+      setText('cvDate', new Date().toLocaleDateString());
+      setText('cvFileNameText', name + ' — uploaded successfully');
+      showToast('CV uploaded successfully!');
+      
+      // Update APP object if present
+      if (APP && APP.profile) {
+          APP.profile.resumeUrl = '/uploads/resumes/' + name;
+          APP.profile.resumeFileName = name;
+      }
+      mountResumeEmbed('interviewerProfileResumeEmbed', '/uploads/resumes/' + name, name, { height: '420px' });
+    } else {
+      setText('cvFileNameText', 'Upload failed');
+      showToast('CV upload failed', 'error');
+    }
+  } catch (e) {
+    setText('cvFileNameText', 'Upload error');
+    showToast('CV upload error', 'error');
+  }
+}
 function saveProfile() { showToast('Profile details updated in UI. Backend update endpoint can be added next.'); }
 function removeSkill(icon) { icon.closest('.skill-tag').remove(); }
 function addSkill(e) { if (e.key !== 'Enter') return; const input = document.getElementById('skillInput'); const val = input.value.trim(); if (!val) return; const tag = document.createElement('span'); tag.className = 'skill-tag'; tag.innerHTML = `${val} <i class="fa-solid fa-xmark" onclick="removeSkill(this)"></i>`; document.getElementById('skillTagArea').insertBefore(tag, input); input.value = ''; }
 function checkPassStrength() { const v = document.getElementById('newPass').value; const el = document.getElementById('passStrength'); if (!v) { el.style.display = 'none'; return; } el.style.display = 'block'; if (v.length < 6) { el.style.color = '#DC2626'; el.innerText = 'Weak password'; } else if (v.length < 10 || !/[A-Z]/.test(v) || !/[0-9]/.test(v)) { el.style.color = '#EAB308'; el.innerText = 'Medium strength'; } else { el.style.color = '#16A34A'; el.innerText = 'Strong password'; } }
 function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confirmPass').value; if (!np) return showToast('Enter a new password.', 'warn'); if (np !== cp) return showToast('Passwords do not match.', 'error'); showToast('Password updated successfully!'); document.getElementById('newPass').value = ''; document.getElementById('confirmPass').value = ''; document.getElementById('passStrength').style.display = 'none'; }
 function confirmLogout() { closeOverlay('logoutOverlay'); logout(); }
-function showToast(msg, type = 'success') { const map = { success: ['#DCFCE7', '#166534'], warn: ['#FEF3C7', '#92400E'], error: ['#FEE2E2', '#991B1B'] }; const colors = map[type] || map.success; const t = document.createElement('div'); t.className = 'toast'; t.style.cssText = `background:${colors[0]};color:${colors[1]};`; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+function showToast(msg, type = 'success') { const map = { success: ['#DCFCE7', '#166534'], warn: ['#FEF3C7', '#92400E'], error: ['#FEE2E2', '#991B1B'] }; const colors = map[type] || map.success; const t = document.createElement('div'); t.className = 'toast'; t.style.cssText = `background:${colors[0]};color:${colors[1]};`; t.innerText = msg; document.body.appendChild(t); setTimeout(() => {t.remove();if(!type||type==='success'){window.location.reload();}},1500); }
 
 function fillSkills(skills) {
   const area = document.getElementById('skillTagArea');
@@ -1075,3 +1112,4 @@ function mapPerformanceToRating(perf) { if (perf.includes('Excellent')) return 5
 function isCompleted(key) { return !!APP.completed[key]; }
 function getInitials(name) { return (name || '').split(' ').filter(Boolean).map(x => x[0]).join('').slice(0, 2).toUpperCase() || 'IV'; }
 function setText(id, value) { const el = document.getElementById(id); if (el) el.textContent = value; }
+

@@ -904,3 +904,4 @@ window.addEventListener('DOMContentLoaded', async function() {
     // 6. Show setup modal if first time
     checkSetup();
 });
+

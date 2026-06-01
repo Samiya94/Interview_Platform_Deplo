@@ -16,6 +16,8 @@ import com.interviewPlatform.entities.Interviewer;
 import com.interviewPlatform.entities.User;
 import com.interviewPlatform.enums.Role;
 import com.interviewPlatform.enums.Status;
+import com.interviewPlatform.repositories.DomainRepository;
+import com.interviewPlatform.entities.Domain;
 import com.interviewPlatform.repositories.InstituteRepository;
 import com.interviewPlatform.repositories.InterviewerRepository;
 import com.interviewPlatform.repositories.UserRepository;
@@ -30,6 +32,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final InstituteRepository instituteRepository;
     private final InterviewerRepository interviewerRepository;
+    private final DomainRepository domainRepository;
     private final PasswordEncoder passwordEncoder;
 
 
@@ -104,6 +107,14 @@ public class AuthServiceImpl implements AuthService{
         interviewer.setCompany(request.company());
         interviewer.setExperience(request.experience());
         interviewer.setDomain(request.domain());
+        
+        if (request.domain() != null && !request.domain().trim().isEmpty()) {
+            String domName = request.domain().trim();
+            if (!domainRepository.existsByNameIgnoreCase(domName)) {
+                domainRepository.save(new Domain(null, domName));
+            }
+        }
+        
         interviewer.setQualification(request.qualification());
         interviewer.setLinkedin(request.linkedin());
         interviewer.setSkills(request.skills());
