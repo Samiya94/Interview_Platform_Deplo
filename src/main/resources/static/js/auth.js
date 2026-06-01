@@ -1,5 +1,5 @@
 function getToken() {
-    return getToken() || sessionStorage.getItem("accessToken");
+    return localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 }
 
 function decodeJwtPayload(token) {
