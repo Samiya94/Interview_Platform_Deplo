@@ -129,12 +129,29 @@ function initStudentUI() {
   var fn   = STUDENT.firstName || name.split(' ')[0] || 'Student';
   var ln   = STUDENT.lastName  || name.split(' ').slice(1).join(' ') || '';
 
-  var ha = document.getElementById('headerAvatar'); if(ha) ha.textContent = ini;
+  var ha = document.getElementById('headerAvatar');
+  var pA = document.getElementById('phAvatar');
+  
+  if(ha) {
+    if (DASHBOARD_STATS.profilePhotoUrl) {
+      ha.innerHTML = `<img src="${DASHBOARD_STATS.profilePhotoUrl}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      ha.textContent = ini;
+    }
+  }
+  
+  if(pA) {
+    if (DASHBOARD_STATS.profilePhotoUrl) {
+      pA.innerHTML = `<img src="${DASHBOARD_STATS.profilePhotoUrl}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      pA.textContent = ini;
+    }
+  }
+
   var hn = document.getElementById('headerName');   if(hn) hn.textContent = name;
   var hs = document.getElementById('headerSub');    if(hs) hs.textContent = cls + ' · Student';
   var dn = document.getElementById('dropName');     if(dn) dn.textContent = name;
   var de = document.getElementById('dropEmail');    if(de) de.textContent = STUDENT.email;
-  var pa = document.getElementById('phAvatar');     if(pa) pa.textContent = ini;
   var pn = document.getElementById('phName');       if(pn) pn.textContent = name;
   var ps = document.getElementById('phSub');        if(ps) ps.textContent = cls + ' · ' + (STUDENT.department||'Student') + ' · ' + (STUDENT.instituteName||'Institute');
   var pe = document.getElementById('phEmail');      if(pe) pe.textContent = STUDENT.email;
@@ -1490,3 +1507,31 @@ function showToast(msg,type){
   t.innerHTML='<i class="fa-solid fa-'+ico+'"></i>'+msg;document.body.appendChild(t);setTimeout(function(){t.remove();if(type==='success'){window.location.reload();}},1500);
 }
 
+async function handleProfilePic(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    document.getElementById('phAvatar').innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    document.getElementById('headerAvatar').innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  };
+  reader.readAsDataURL(file);
+
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  try {
+    const res = await fetch('/api/student/me/photo', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: formData
+    });
+    if (res.ok) {
+      showToast('Profile photo updated!');
+    } else {
+      showToast('Profile photo upload failed', 'error');
+    }
+  } catch (e) {
+    showToast('Profile photo upload error', 'error');
+  }
+}

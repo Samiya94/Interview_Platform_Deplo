@@ -19,4 +19,6 @@ public interface StudentService {
     StudentResumeResponseDTO getMyResume(String email);
 
     StudentResumeResponseDTO uploadMyResume(String email, MultipartFile resumeFile);
+
+    java.util.Map<String, String> uploadMyProfilePhoto(String email, org.springframework.web.multipart.MultipartFile photoFile);
 }

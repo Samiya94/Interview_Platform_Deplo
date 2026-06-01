@@ -10,7 +10,8 @@ public record MentorProfileResponseDTO(
     Long departmentId,
     String departmentName,
     Long instituteId,
-    String instituteName
+    String instituteName,
+    String profilePhotoUrl
 ) {
     
 

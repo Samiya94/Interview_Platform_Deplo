@@ -77,26 +77,25 @@ public class InstituteServiceImpl implements InstituteService {
     }
     
     @Override
-public String getOrCreateRegistrationLink(Long instituteId) {
+    public String getOrCreateRegistrationLink(Long instituteId) {
+        Institute institute = instituteRepository.findById(instituteId)
+            .orElseThrow(() -> new RuntimeException("Institute not found"));
 
-    Institute institute = instituteRepository.findById(instituteId)
-        .orElseThrow(() -> new RuntimeException("Institute not found"));
+        if (institute.getRegistrationToken() == null || 
+            (institute.getTokenCreatedAt() != null && institute.getTokenCreatedAt().plusHours(24).isBefore(java.time.LocalDateTime.now()))) {
+            String token = "REG-" + java.util.UUID.randomUUID()
+                    .toString()
+                    .substring(0, 8)
+                    .toUpperCase();
+            institute.setRegistrationToken(token);
+            institute.setTokenCreatedAt(java.time.LocalDateTime.now());
+            instituteRepository.save(institute);
+        }
 
-   
-    String token = "REG-" + java.util.UUID.randomUUID()
-            .toString()
-            .substring(0, 8)
-            .toUpperCase();
-
-    institute.setRegistrationToken(token);
-    institute.setTokenCreatedAt(java.time.LocalDateTime.now());
-
-    instituteRepository.save(institute);
-
-    String baseUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-    return baseUrl + "/register/mentor?inst="
-            + instituteId + "&token=" + token;
-}
+        String baseUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        return baseUrl + "/register/mentor?inst="
+                + instituteId + "&token=" + institute.getRegistrationToken();
+    }
 
     @Override
 public boolean validateRegistrationToken(Long instituteId, String token) {

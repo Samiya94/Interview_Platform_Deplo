@@ -13,6 +13,7 @@ import com.interviewPlatform.repositories.StudentRepository;
 import com.interviewPlatform.entities.Mentor;
 import com.interviewPlatform.entities.Student;
 import com.interviewPlatform.enums.Status;
+import com.interviewPlatform.services.MentorService;
 import com.interviewPlatform.services.StudentFeedbackService;
 import com.interviewPlatform.dtos.response.StudentFeedbackReportDTO;
 
@@ -32,6 +33,7 @@ public class MentorDashboardController {
     private final InterviewRequestRepository interviewRequestRepository;
     private final StudentApplicationRepository applicationRepository;
     private final StudentFeedbackService feedbackService;
+    private final MentorService mentorService;
 
     @PreAuthorize("hasRole('MENTOR')")
     @GetMapping("/me")
@@ -50,7 +52,8 @@ public class MentorDashboardController {
             mentor.getDepartment() != null ? mentor.getDepartment().getId() : null,
             mentor.getDepartment() != null ? mentor.getDepartment().getName() : null,
             mentor.getInstitute() != null ? mentor.getInstitute().getId() : null,
-            mentor.getInstitute() != null ? mentor.getInstitute().getInstituteName() : null
+            mentor.getInstitute() != null ? mentor.getInstitute().getInstituteName() : null,
+            mentor.getProfilePhotoUrl()
         );
 
         return ResponseEntity.ok(dto);
@@ -192,5 +195,11 @@ public class MentorDashboardController {
     @GetMapping("/students/{studentId}/feedback-reports")
     public ResponseEntity<List<StudentFeedbackReportDTO>> getStudentFeedbackReports(@PathVariable Long studentId) {
         return ResponseEntity.ok(feedbackService.getFeedbackReportsByStudentId(studentId));
+    }
+
+    @PreAuthorize("hasRole('MENTOR')")
+    @PostMapping(value = "/me/photo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadPhoto(Authentication authentication, @RequestPart("photo") org.springframework.web.multipart.MultipartFile photoFile) {
+        return ResponseEntity.ok(mentorService.uploadMyProfilePhoto(authentication.getName(), photoFile));
     }
 }

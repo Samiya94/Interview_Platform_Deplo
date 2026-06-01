@@ -22,8 +22,13 @@ import com.interviewPlatform.services.InstituteService;
 import com.interviewPlatform.services.StudentService;
 import com.interviewPlatform.dtos.request.ChangePasswordRequestDTO;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -214,37 +219,62 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-public StudentResumeResponseDTO uploadMyResume(String email, MultipartFile resumeFile) {
-    Student student = getStudentByEmail(email);
-    if (resumeFile == null || resumeFile.isEmpty()) {
-        throw new RuntimeException("Resume file is required");
+    @Transactional
+    public StudentResumeResponseDTO uploadMyResume(String email, MultipartFile resumeFile) {
+        Student student = getStudentByEmail(email);
+        if (resumeFile == null || resumeFile.isEmpty()) {
+            throw new RuntimeException("Resume file is required");
+        }
+
+        String original = resumeFile.getOriginalFilename();
+        if (original == null || original.isBlank()) original = "resume.pdf";
+        // Sanitize filename: remove path separators and unsafe characters
+        original = original.replaceAll("[/\\\\:*?\"<>|]", "_").trim();
+
+        String fileName = System.currentTimeMillis() + "_" + original;
+
+        try {
+            String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+            var uploadsDir = java.nio.file.Paths.get(dir);
+            java.nio.file.Files.createDirectories(uploadsDir);
+            var target = uploadsDir.resolve(fileName);
+            java.nio.file.Files.write(target, resumeFile.getBytes());
+
+            student.setResumeUrl(fileName);
+            studentRepository.save(student);
+
+            return new StudentResumeResponseDTO(student.getId(), fileName, java.time.LocalDateTime.now(), "/uploads/" + fileName);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save resume", e);
+        }
     }
 
-    String original = resumeFile.getOriginalFilename();
-    if (original == null || original.isBlank()) original = "resume.pdf";
-    // Sanitize filename: remove path separators and unsafe characters
-    original = original.replaceAll("[/\\\\:*?\"<>|]", "_").trim();
+    @Override
+    @Transactional
+    public Map<String, String> uploadMyProfilePhoto(String email, MultipartFile photoFile) {
+        if (photoFile == null || photoFile.isEmpty()) {
+            throw new RuntimeException("Photo file is empty");
+        }
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Student student = studentRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Student profile not found"));
 
-    String fileName = System.currentTimeMillis() + "_" + original;
+        try {
+            String photoFileName = System.currentTimeMillis() + "_photo_" + photoFile.getOriginalFilename();
+            String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
+            if (!dir.endsWith("/")) dir += "/";
+            Path photoPath = Paths.get(dir + "profiles/" + photoFileName);
+            Files.createDirectories(photoPath.getParent());
+            Files.write(photoPath, photoFile.getBytes());
 
-    try {
-        String dir = uploadDir != null && !uploadDir.isBlank() ? uploadDir : "uploads/";
-        var uploadsDir = java.nio.file.Paths.get(dir);
-        java.nio.file.Files.createDirectories(uploadsDir);
-        var target = uploadsDir.resolve(fileName);
-        java.nio.file.Files.write(target, resumeFile.getBytes());
+            student.setProfilePhotoUrl("/uploads/profiles/" + photoFileName);
+            studentRepository.save(student);
 
-        student.setResumeUrl(fileName);
-        studentRepository.save(student);
-
-        return new StudentResumeResponseDTO(
-            student.getId(),
-            fileName,
-            java.time.LocalDateTime.now(),
-            "/uploads/" + fileName
-        );
-    } catch (Exception e) {
-        throw new RuntimeException("Resume upload failed");
+            Map<String, String> res = new HashMap<>();
+            res.put("profilePhotoUrl", "/uploads/profiles/" + photoFileName);
+            return res;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload profile photo", e);
+        }
     }
-}
 }

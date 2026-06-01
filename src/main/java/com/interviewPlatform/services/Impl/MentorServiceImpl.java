@@ -36,6 +36,9 @@ public class MentorServiceImpl implements MentorService {
     private final InstituteService instituteService;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${file.upload.dir:uploads/}")
+    private String uploadDir;
+
     @Transactional
     @Override
     public void registerMentor(MentorRegisterRequest request) {

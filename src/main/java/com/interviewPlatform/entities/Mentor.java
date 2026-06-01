@@ -45,6 +45,7 @@ public class Mentor {
     private Institute institute;
 
     private LocalDateTime createdAt;
+    private String profilePhotoUrl;
 
     @PrePersist
     public void onCreate(){

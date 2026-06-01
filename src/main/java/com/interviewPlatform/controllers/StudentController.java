@@ -63,9 +63,12 @@ public class StudentController {
     }
 
     @PostMapping(value = "/me/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<StudentResumeResponseDTO> uploadResume(
-            Authentication authentication,
-            @RequestPart("resume") MultipartFile resumeFile) {
+    public ResponseEntity<?> uploadResume(Authentication authentication, @RequestPart("resume") MultipartFile resumeFile) {
         return ResponseEntity.ok(studentService.uploadMyResume(authentication.getName(), resumeFile));
+    }
+
+    @PostMapping(value = "/me/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadPhoto(Authentication authentication, @RequestPart("photo") MultipartFile photoFile) {
+        return ResponseEntity.ok(studentService.uploadMyProfilePhoto(authentication.getName(), photoFile));
     }
 }

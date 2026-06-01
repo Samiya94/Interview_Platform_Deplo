@@ -44,7 +44,8 @@ async function fetchMentorProfile() {
             phone: data.phone || '',
             designation: data.designation || 'TPO Coordinator',
             instituteId: data.instituteId || null,
-            instituteName: data.instituteName || ''
+            instituteName: data.instituteName || '',
+            profilePhotoUrl: data.profilePhotoUrl || null
         };
 
         localStorage.setItem("mentorDeptId", data.departmentId);
@@ -453,7 +454,7 @@ function initHeader() {
     const dept = loggedMentor.department || 'TPO Coordinator';
     const email = loggedMentor.email || '';
 
-    const savedPhoto = localStorage.getItem('mentorProfilePhoto_' + loggedMentor.id);
+    const savedPhoto = loggedMentor.profilePhotoUrl || localStorage.getItem('mentorProfilePhoto_' + loggedMentor.id);
     const hdr = document.getElementById('headerAvatar');
     if (hdr) {
         if (savedPhoto) {
@@ -716,6 +717,7 @@ function switchTab(el, panelId) {
 function handleProfilePhoto(input) {
     if (!input.files || !input.files[0]) return;
     if (input.files[0].size > 3 * 1024 * 1024) { showToast('Photo too large. Max 3 MB.', 'warn'); return; }
+    const file = input.files[0];
     const reader = new FileReader();
     reader.onload = function(ev) {
         const src = ev.target.result;
@@ -725,10 +727,25 @@ function handleProfilePhoto(input) {
         if (txt) txt.style.display = 'none';
         const hdr = document.getElementById('headerAvatar');
         if (hdr) hdr.innerHTML = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-        try { localStorage.setItem('mentorProfilePhoto_' + loggedMentor.id, src); } catch (e) {}
-        showToast('Profile photo updated!');
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    fetch('/api/mentor/me/photo', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + getToken() },
+        body: formData
+    })
+    .then(res => {
+        if (res.ok) {
+            showToast('Profile photo updated!');
+        } else {
+            showToast('Profile photo upload failed', 'error');
+        }
+    })
+    .catch(e => showToast('Profile photo upload error', 'error'));
 }
 
 /* ===== PROFILE EDIT ===== */
