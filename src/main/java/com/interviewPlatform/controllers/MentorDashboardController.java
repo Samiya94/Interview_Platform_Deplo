@@ -91,9 +91,7 @@ public class MentorDashboardController {
                     s.getDepartment() != null ? s.getDepartment().getName() : null,
                     resumeFileName,
                     resumeUrl,
-                    null,  // projectName
-                    null,  // projectBrief
-                    null,   // projectGithub
+                    s.getProjects(),  // projects
                     applicationRepository.findByStudentId(s.getId()).stream()
                         .filter(a -> a.getStatus() == Status.APPROVED && 
                                      a.getInterviewRequest() != null && 

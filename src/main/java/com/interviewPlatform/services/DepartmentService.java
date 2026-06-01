@@ -13,6 +13,7 @@ public interface DepartmentService {
     List<DepartmentResponseDTO> getDepartments(Long instituteId);
     List<DepartmentStatsResponseDTO> getDepartmentStats(Long instituteId);
     void deleteDepartment(Long id);
+    DepartmentResponseDTO suspendDepartment(Long id);
     ResponseEntity<?> getStudentsByDepartment(Long deptId);
 
 }

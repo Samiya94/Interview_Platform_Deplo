@@ -37,7 +37,7 @@ public class Mentor {
 
     private String designation;
     @OneToOne
-    @JoinColumn(name = "department_id", nullable = false, unique = true)
+    @JoinColumn(name = "department_id", unique = true)
     private Department department;
     
     @ManyToOne

@@ -17,6 +17,7 @@ import com.interviewPlatform.entities.InterviewRequest;
 import com.interviewPlatform.repositories.DepartmentRepository;
 import com.interviewPlatform.repositories.InstituteRepository;
 import com.interviewPlatform.repositories.InterviewRequestRepository;
+import com.interviewPlatform.repositories.MentorRepository;
 import com.interviewPlatform.repositories.StudentRepository;
 import com.interviewPlatform.services.DepartmentService;
 
@@ -30,6 +31,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final InstituteRepository instituteRepository;
     private final InterviewRequestRepository interviewRequestRepository;
     private final StudentRepository studentRepository;
+    private final MentorRepository mentorRepository;
 
     @Transactional
     @Override
@@ -78,7 +80,23 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Transactional
     @Override
     public void deleteDepartment(Long id) {
+        studentRepository.findByDepartmentId(id).forEach(s -> {
+            s.setDepartment(null);
+            studentRepository.save(s);
+        });
+        mentorRepository.findByDepartmentId(id).ifPresent(m -> {
+            m.setDepartment(null);
+            mentorRepository.save(m);
+        });
         departmentRepository.deleteById(id);
+    }
+
+    @Transactional
+    public DepartmentResponseDTO suspendDepartment(Long id) {
+        Department dept = departmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        dept.setStatus(dept.getStatus() == Department.Status.ACTIVE ? Department.Status.SUSPENDED : Department.Status.ACTIVE);
+        return mapToDTO(departmentRepository.save(dept));
     }
 
      //  MAPPER
@@ -87,7 +105,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                 dept.getId(),
                 dept.getName(),
                 dept.getInstitute().getId(),
-                dept.getInstitute().getInstituteName()
+                dept.getInstitute().getInstituteName(),
+                dept.getStatus().name()
         );
     }
 

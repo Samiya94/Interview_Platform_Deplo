@@ -4,7 +4,8 @@ public record DepartmentResponseDTO(
     Long id,
     String name,
     Long instituteId,
-    String instituteName
+    String instituteName,
+    String status
 ) {
 
 }

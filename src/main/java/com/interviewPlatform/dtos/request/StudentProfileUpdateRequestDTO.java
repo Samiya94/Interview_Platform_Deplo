@@ -7,8 +7,6 @@ public record StudentProfileUpdateRequestDTO(
         Double cgpa,
         String about,
         List<String> skills,
-        String projectName,
-        String projectBrief,
-        String projectGithub
+        String projects
 ) {
 }

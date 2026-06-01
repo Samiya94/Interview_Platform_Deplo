@@ -51,6 +51,12 @@ public class DepartmentController {
         departmentService.deleteDepartment(id);
     }
 
+    @PreAuthorize("hasRole('INSTITUTE')")
+    @org.springframework.web.bind.annotation.PutMapping("/{id}/suspend")
+    public DepartmentResponseDTO suspendDepartment(@PathVariable Long id) {
+        return departmentService.suspendDepartment(id);
+    }
+
     @GetMapping("/{deptId}/students")
     public ResponseEntity<?> getStudentsByDept(@PathVariable Long deptId) {
         return departmentService.getStudentsByDepartment(deptId);

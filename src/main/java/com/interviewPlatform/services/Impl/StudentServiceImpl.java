@@ -115,14 +115,8 @@ public class StudentServiceImpl implements StudentService {
         if (request.skills() != null) {
             student.setSkills(request.skills());
         }
-        if (request.projectName() != null) {
-            student.setProjectName(request.projectName());
-        }
-        if (request.projectBrief() != null) {
-            student.setProjectBrief(request.projectBrief());
-        }
-        if (request.projectGithub() != null) {
-            student.setProjectGithub(request.projectGithub());
+        if (request.projects() != null) {
+            student.setProjects(request.projects());
         }
         return mapToResponse(studentRepository.save(student));
     }
@@ -173,9 +167,7 @@ public class StudentServiceImpl implements StudentService {
                 student.getDepartment() != null ? student.getDepartment().getName() : null,
                 resumeFileName,
                 resumeUrl,
-                student.getProjectName(),
-                student.getProjectBrief(),
-                student.getProjectGithub(),
+                student.getProjects(),
                 applicationRepository.findByStudentId(student.getId()).stream()
                     .filter(a -> a.getStatus() == Status.APPROVED && 
                                  a.getInterviewRequest() != null && 

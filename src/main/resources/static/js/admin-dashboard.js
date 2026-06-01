@@ -877,11 +877,27 @@ function requestScheduleConfirmation(reqId) {
     }
 
     const isReschedule = document.getElementById('rescheduleToggle')?.checked;
-    const newStart = document.getElementById('startDateTime')?.value;
-    const newEnd = document.getElementById('endDateTime')?.value;
+    const newStartDate = document.getElementById('startDate')?.value;
+    const newStartTime = document.getElementById('startTime')?.value;
+    const newEndDate = document.getElementById('endDate')?.value;
+    const newEndTime = document.getElementById('endTime')?.value;
+
+    let newStart = null;
+    let newEnd = null;
+    if (newStartDate && newStartTime) {
+        newStart = `${newStartDate}T${newStartTime}:00`;
+    }
+    if (newEndDate && newEndTime) {
+        newEnd = `${newEndDate}T${newEndTime}:00`;
+    }
 
     if (isReschedule && !newStart) {
         showToast('Please select a new start date/time', 'warn');
+        return;
+    }
+    
+    if (isReschedule && newStart && newEnd && new Date(newStart) >= new Date(newEnd)) {
+        showToast('Start date and time must be before end date and time.', 'warn');
         return;
     }
 

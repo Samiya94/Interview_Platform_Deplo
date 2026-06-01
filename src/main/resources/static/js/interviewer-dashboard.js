@@ -148,27 +148,17 @@ function normalizeStudent(interview, student) {
     videoUrl: student.videoUrl || null,
     applicationId: student.applicationId || null,
     instituteConfirmed: interview.instituteConfirmed === true,
-    projectName: student.projectName || '',
-    projectBrief: student.projectBrief || '',
-    projectGithub: student.projectGithub || '',
+    projects: student.projects || '',
     evaluationSubmitted: !!student.evaluationSubmitted
   };
 }
 
 function renderProjectDetailsHtml(s) {
-  if (!s || (!s.projectName && !s.projectBrief && !s.projectGithub)) {
+  if (!s || (!s.projects)) {
     return '<p style="color:var(--muted);">No project details provided.</p>';
   }
   let html = '';
-  if (s.projectName) {
-    html += '<div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Project Name</div><b>' + escHtml(s.projectName) + '</b></div>';
-  }
-  if (s.projectBrief) {
-    html += '<div style="margin-top:10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Brief</div><p style="line-height:1.6;margin:0;">' + escHtml(s.projectBrief) + '</p></div>';
-  }
-  if (s.projectGithub) {
-    html += '<div style="margin-top:10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">GitHub</div><a href="' + escHtml(s.projectGithub) + '" target="_blank" rel="noopener" style="color:var(--primary);word-break:break-all;">' + escHtml(s.projectGithub) + '</a></div>';
-  }
+  html += '<div style="margin-top:10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Projects</div><p style="line-height:1.6;margin:0;white-space:pre-wrap;">' + escHtml(s.projects) + '</p></div>';
   return html;
 }
 

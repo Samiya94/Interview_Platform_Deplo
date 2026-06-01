@@ -1,31 +1,5 @@
 const dashboardEl = document.getElementById("dashboard");
-async function loadDashboard() {
 
-  try {
-    // Use secureFetch so expired tokens are refreshed automatically
-    const response = await secureFetch("/api/institute-dashboard", {
-      method: "GET"
-    });
-
-    if (!response) return; // secureFetch already handled redirect
-
-    // 401 is handled automatically by secureFetch (token refresh + redirect)
-    if (response.status === 403) {
-  dashboardEl.innerText = "Access Denied (Insufficient permissions)";
-  return;
-}
-
-    if (!response.ok) {
-      dashboardEl.innerText = "Access Denied";
-      return;
-    }
-
-    // /api/institute-dashboard returns plain text "Welcome Institute" — just verify access, don't parse as JSON
-    // The actual dashboard data is loaded by the sections below (departments, interviews, etc.)
-  } catch (err) {
-    console.error(err);
-  }
-}
 
 
 // window.addEventListener("load", loadDashboard);
@@ -450,6 +424,26 @@ async function deleteDeptFromBackend(id){
   }
 }
 
+async function suspendDeptFromBackend(id){
+  try {
+    const res = await secureFetch(`${API_BASE}/${id}/suspend`, {
+      method: "PUT",
+      headers: {}
+    });
+    if (!res) return;
+    if (res.status === 403) {
+      showToast("Access Denied", "error");
+      return;
+    }
+    if(!res.ok) throw new Error("Suspend failed");
+    await fetchDepartments();
+    showToast("Department status updated successfully");
+  } catch(err){
+    console.error(err);
+    showToast("Status update failed","error");
+  }
+}
+
 let _delIdx=null;
 function promptDel(i){
   _delIdx=i;
@@ -486,10 +480,14 @@ async function renderSettingsTable(){
   tbody.innerHTML=departments.map((d,i)=>{
     const tpo=tpoMap[d.name];
     const coord=tpo?.coordinatorName||d.coordinator||'Not Assigned';
+    const statusBadge = d.status === 'SUSPENDED' ? '<span class="badge bg-danger">Suspended</span>' : '<span class="badge bg-success">Active</span>';
     return `<tr>
-      <td><b>${d.name}</b></td>
+      <td><b>${d.name}</b> ${statusBadge}</td>
       <td><span class="badge ${tpo?'bg-success':'bg-pending'}">${tpo?'<i class="fa-solid fa-circle-check"></i> '+coord:'<i class="fa-solid fa-clock"></i> Awaiting'}</span></td>
-      <td><button class="btn btn-danger-outline btn-sm" onclick="promptDel(${i})"><i class="fa-solid fa-trash"></i> Remove</button></td>
+      <td>
+        <button class="btn btn-warning-outline btn-sm" onclick="suspendDeptFromBackend(${d.id})"><i class="fa-solid fa-pause"></i> ${d.status === 'SUSPENDED' ? 'Activate' : 'Suspend'}</button>
+        <button class="btn btn-danger-outline btn-sm" onclick="promptDel(${i})"><i class="fa-solid fa-trash"></i> Remove</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1177,15 +1175,24 @@ async function handleSchedSubmit(e){
   const depts = getSelectedDepts();
   const exp = getSelectedExp();
 
-  const start = document.getElementById('startDT').value;
-  const end   = document.getElementById('endDT').value;
+  const startDate = document.getElementById('startDate').value;
+  const startTime = document.getElementById('startTime').value;
+  const endDate   = document.getElementById('endDate').value;
+  const endTime   = document.getElementById('endTime').value;
   const cp    = document.getElementById('contactPerson').value;
   const ce    = document.getElementById('contactEmail').value;
   const rem   = document.getElementById('schedRemarks').value;
 
-  // ✅ KEEP YOUR VALIDATION EXACTLY AS IT IS
-  if(!depts.length || !exp.length || !start || !end || !cp || !ce){
+  if(!depts.length || !exp.length || !startDate || !startTime || !endDate || !endTime || !cp || !ce){
     showToast('Fill all required fields','warn');
+    return;
+  }
+
+  const start = `${startDate}T${startTime}:00`;
+  const end = `${endDate}T${endTime}:00`;
+  
+  if (new Date(start) >= new Date(end)) {
+    showToast('Start date and time must be before end date and time.', 'warn');
     return;
   }
 
@@ -2024,8 +2031,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 2. now safe to sync
   syncRegistry();
 
-  // 3. load dashboard API
-  await loadDashboard();
+  // 3. (loadDashboard removed)
 
   // 4. UI setup
   initHeader();

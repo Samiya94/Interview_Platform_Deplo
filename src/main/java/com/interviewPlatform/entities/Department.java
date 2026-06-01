@@ -40,5 +40,10 @@ public class Department {
     @OneToOne(mappedBy = "department",fetch = FetchType.LAZY)
     private Mentor mentor;
 
+    public enum Status {
+        ACTIVE, SUSPENDED
+    }
 
+    @Column(nullable = false)
+    private Status status = Status.ACTIVE;
 }

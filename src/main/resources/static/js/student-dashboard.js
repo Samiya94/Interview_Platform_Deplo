@@ -28,7 +28,7 @@ var STUDENT = {
   name:'', firstName:'', lastName:'', email:'',
   phone:'', department:'', instituteName:'', class:'',
   year:'SY', degree:'MCA', about:'', skills:[], cgpa:null,
-  projectName:'', projectBrief:'', projectGithub:''
+  projects:''
 };
 var DASHBOARD_STATS = null;
 var MY_INTERVIEWS   = [];
@@ -110,9 +110,7 @@ async function loadDashboardStats() {
         assignedInterviewerName: iv.assignedInterviewerName
       };
     });
-    if (DASHBOARD_STATS.projectName) STUDENT.projectName = DASHBOARD_STATS.projectName;
-    if (DASHBOARD_STATS.projectBrief) STUDENT.projectBrief = DASHBOARD_STATS.projectBrief;
-    if (DASHBOARD_STATS.projectGithub) STUDENT.projectGithub = DASHBOARD_STATS.projectGithub;
+    if (DASHBOARD_STATS.projects) STUDENT.projects = DASHBOARD_STATS.projects;
     // Seed resume info from dashboard-stats so it's available before loadResumeInfo() runs
     if (DASHBOARD_STATS.resumeFileName) {
       STUDENT_RESUME.url = DASHBOARD_STATS.resumeUrl || null;
@@ -183,9 +181,7 @@ function initStudentUI() {
   }
   updateClassCode();
 
-  setVal('pf_projectName', STUDENT.projectName || DASHBOARD_STATS && DASHBOARD_STATS.projectName || '');
-  setVal('pf_projectBrief', STUDENT.projectBrief || DASHBOARD_STATS && DASHBOARD_STATS.projectBrief || '');
-  setVal('pf_projectGithub', STUDENT.projectGithub || DASHBOARD_STATS && DASHBOARD_STATS.projectGithub || '');
+  setVal('pf_projects', STUDENT.projects || DASHBOARD_STATS && DASHBOARD_STATS.projects || '');
   var ab = document.getElementById('pf_about');
   if (ab) ab.value = STUDENT.about || '';
   var scc= document.getElementById('statsClassCode'); if(scc) scc.textContent = cls;
@@ -1098,19 +1094,16 @@ function updateClassCode(){
 }
 function saveAcademic(){
   var ye=document.getElementById('pf_year'),de=document.getElementById('pf_degree'),ab=document.getElementById('pf_about');
+  STUDENT.skills=getSkills();
   var degVal=resolveProfileDegree();
   if(de&&de.value==='Other'&&!degVal){showToast('Please enter your degree.','warn');return;}
   STUDENT.year=ye?ye.value:STUDENT.year;STUDENT.degree=degVal;STUDENT.class=STUDENT.year+STUDENT.degree;
-  STUDENT.about=ab?ab.value:STUDENT.about;STUDENT.skills=getSkills();
-  var pn = document.getElementById('pf_projectName');
-  var pb = document.getElementById('pf_projectBrief');
-  var pg = document.getElementById('pf_projectGithub');
-  STUDENT.projectName = pn ? pn.value.trim() : '';
-  STUDENT.projectBrief = pb ? pb.value.trim() : '';
-  STUDENT.projectGithub = pg ? pg.value.trim() : '';
+  var p = document.getElementById('pf_projects');
+  STUDENT.projects = p ? p.value.trim() : '';
+  STUDENT.about = ab ? ab.value : STUDENT.about;
   secureFetch('/api/students/me',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     studentClass:STUDENT.class,cgpa:null,about:STUDENT.about||'',skills:STUDENT.skills||[],
-    projectName:STUDENT.projectName,projectBrief:STUDENT.projectBrief,projectGithub:STUDENT.projectGithub
+    projects:STUDENT.projects
   })})
       .then(function(res){if(!res.ok)throw new Error();try{localStorage.setItem('currentStudent',JSON.stringify(STUDENT));}catch(e){}updateClassCode();showToast('Academic details saved!');})
       .catch(function(){try{localStorage.setItem('currentStudent',JSON.stringify(STUDENT));}catch(e){}updateClassCode();showToast('Saved locally','warn');});

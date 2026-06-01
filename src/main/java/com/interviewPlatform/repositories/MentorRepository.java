@@ -11,6 +11,7 @@ import com.interviewPlatform.entities.User;
 
 public interface MentorRepository extends JpaRepository<Mentor,Long> {
     boolean existsByDepartment(Department department);
+    Optional<Mentor> findByDepartmentId(Long departmentId);
     List<Mentor> findByInstituteId(Long instituteID);
     Optional<Mentor> findByUserEmail(String email);
     Optional<Mentor> findByUser(User user);
