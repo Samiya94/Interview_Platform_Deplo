@@ -4,8 +4,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.interviewPlatform.dtos.request.MentorRegisterRequest;
 import com.interviewPlatform.dtos.response.MentorResponse;
@@ -19,6 +29,8 @@ import com.interviewPlatform.repositories.DepartmentRepository;
 import com.interviewPlatform.repositories.InstituteRepository;
 import com.interviewPlatform.repositories.MentorRepository;
 import com.interviewPlatform.repositories.UserRepository;
+import com.interviewPlatform.repositories.InterviewerRepository;
+import com.interviewPlatform.entities.Interviewer;
 import com.interviewPlatform.services.InstituteService;
 import com.interviewPlatform.services.MentorService;
 
@@ -35,6 +47,7 @@ public class MentorServiceImpl implements MentorService {
     private final DepartmentRepository departmentRepository;
     private final InstituteService instituteService;
     private final PasswordEncoder passwordEncoder;
+    private final InterviewerRepository interviewerRepository;
 
     @Value("${file.upload.dir:uploads/}")
     private String uploadDir;
@@ -112,5 +125,56 @@ public class MentorServiceImpl implements MentorService {
                 m.getPhone(),
                 m.getDesignation()
         )).toList();
+    }
+
+    @Override
+    public void deleteInterviewer(Long mentorId, Long interviewerId) {
+        interviewerRepository.deleteById(interviewerId);
+    }
+
+    @Override
+    public void approveInterviewer(Long mentorId, Long interviewerId) {
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+            .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+        interviewer.getUser().setStatus(Status.ACTIVE);
+        interviewerRepository.save(interviewer);
+    }
+
+    @Transactional
+    @Override
+    public Map<String, String> uploadMyProfilePhoto(String email, MultipartFile photoFile) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Mentor mentor = mentorRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Mentor profile not found"));
+
+        if (photoFile == null || photoFile.isEmpty()) {
+            throw new RuntimeException("File is empty");
+        }
+
+        try {
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            String originalName = photoFile.getOriginalFilename();
+            String extension = "";
+            if (originalName != null && originalName.lastIndexOf(".") > -1) {
+                extension = originalName.substring(originalName.lastIndexOf("."));
+            }
+            String fileName = UUID.randomUUID().toString() + extension;
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            Files.copy(photoFile.getInputStream(), filePath);
+
+            mentor.setProfilePhotoUrl("/uploads/" + fileName);
+            mentorRepository.save(mentor);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("profilePhotoUrl", mentor.getProfilePhotoUrl());
+            return response;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file", e);
+        }
     }
 }
