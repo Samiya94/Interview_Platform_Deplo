@@ -976,7 +976,7 @@ async function applyFilters(){
     const s = normalizeStatusValue(d.status || getStatus(deptName));
 
     if(fS && formatStatusLabel(s) !== fS) return;
-    if (fD && deptName !== fD) return;
+    if (fD && !deptName.includes(fD)) return;
 
     if(fDate){const slotDate=sd?sd.slice(0,10):slot.slice(0,10);if(!slotDate.startsWith(fDate))return;}
     if (fQ && !(deptName + ' ' + coord + ' ' + exp).toLowerCase().includes(fQ)) return;
@@ -1199,31 +1199,33 @@ async function handleSchedSubmit(e){
 
   try {
 
+    let totalStudents = 0;
     for (let dept of depts) {
+      totalStudents += await getRegisteredStudentCountForDept(dept);
+    }
 
-      const payload = {
-        departmentName: dept,
-        expertise: exp,
-        startDate: start,
-        endDate: end,
-        contactPerson: cp,
-        contactEmail: ce,
-        remarks: rem,
-        registeredStudentsCount: await getRegisteredStudentCountForDept(dept)
-      };
+    const payload = {
+      departmentName: depts.join(', '),
+      expertise: exp,
+      startDate: start,
+      endDate: end,
+      contactPerson: cp,
+      contactEmail: ce,
+      remarks: rem,
+      registeredStudentsCount: totalStudents
+    };
 
-      const res = await secureFetch("/api/interview-requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload)
-      });
+    const res = await secureFetch("/api/interview-requests", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload)
+    });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Failed to send request");
-      }
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || "Failed to send request");
     }
 
     showToast("Interview request submitted successfully!", "success");
