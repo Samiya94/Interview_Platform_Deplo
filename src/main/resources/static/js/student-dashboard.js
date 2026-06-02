@@ -211,11 +211,7 @@ function fillDashboardStatCards() {
   var perfBest = document.querySelector('#view-performance .stat-card.c-green h3');
   if(perfBest) perfBest.textContent = (DASHBOARD_STATS.interviewsTaken > 0 && DASHBOARD_STATS.bestScore != null) ? DASHBOARD_STATS.bestScore.toFixed(1) : '—';
 
-  var bannerSub = document.querySelector('.wb-left p');
-  if(bannerSub) {
-    var up  = MY_INTERVIEWS.filter(function(i){ return i.status==='APPROVED'; }).length;
-    bannerSub.textContent = 'You have ' + up + ' confirmed interview' + (up !== 1 ? 's' : '') + '.';
-  }
+  // Banner text is now updated in loadAvailableInterviewsFromAPI
 }
 
 function updateGreeting() {
@@ -742,6 +738,14 @@ async function loadAvailableInterviewsFromAPI() {
     window.API_INTERVIEW_SLOTS = filteredSlots;
     renderAPISlotGrid('dashSlots');
     renderAPISlotGrid('applyGrid');
+
+    // Update banner text
+    var bannerSub = document.querySelector('.wb-left p');
+    if(bannerSub) {
+      var remaining = filteredSlots.filter(function(s) { return !s.alreadyApplied; }).length;
+      bannerSub.textContent = 'You have ' + remaining + ' interview slot' + (remaining !== 1 ? 's' : '') + ' available to apply for.';
+    }
+
     } catch(e) {
         console.error('Available interviews error:', e);
     }
