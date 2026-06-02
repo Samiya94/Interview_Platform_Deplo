@@ -75,6 +75,14 @@ public class MentorDashboardController {
                 String resumeUrl = (resumeFileName != null && !resumeFileName.isBlank())
                     ? "/uploads/" + resumeFileName
                     : null;
+                
+                List<Double> scores = applicationRepository.findByStudentId(s.getId()).stream()
+                    .map(com.interviewPlatform.entities.StudentApplication::getEvaluation)
+                    .filter(e -> e != null && e.getOverallScore() != null)
+                    .map(com.interviewPlatform.entities.StudentEvaluation::getOverallScore)
+                    .toList();
+                Double averageScore = scores.isEmpty() ? null : scores.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+
                 return new StudentProfileResponseDTO(
                     s.getId(),
                     s.getFirstName(),
@@ -90,13 +98,14 @@ public class MentorDashboardController {
                     s.getDepartment() != null ? s.getDepartment().getName() : null,
                     resumeFileName,
                     resumeUrl,
-                    s.getProjects(),  // projects
+                    s.getProjects(),
                     applicationRepository.findByStudentId(s.getId()).stream()
                         .filter(a -> a.getStatus() == Status.APPROVED && 
                                      a.getInterviewRequest() != null && 
                                      a.getInterviewRequest().getStatus() == Status.COMPLETED)
                         .count(),
-                    s.getProfilePhotoUrl()
+                    s.getProfilePhotoUrl(),
+                    averageScore
                 );
             })
             .toList();

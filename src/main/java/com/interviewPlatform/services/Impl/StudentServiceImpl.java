@@ -169,7 +169,8 @@ public class StudentServiceImpl implements StudentService {
                                  a.getInterviewRequest() != null && 
                                  a.getInterviewRequest().getStatus() == Status.COMPLETED)
                     .count(),
-                student.getProfilePhotoUrl()
+                student.getProfilePhotoUrl(),
+                null
         );
     }
 

@@ -19,6 +19,7 @@ public record StudentProfileResponseDTO(
         String resumeUrl,
         String projects,
         Long interviewsTaken,
-        String profilePhotoUrl
+        String profilePhotoUrl,
+        Double averageScore
 ) {
 }
