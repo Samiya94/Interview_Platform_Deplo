@@ -1337,23 +1337,39 @@ function cancelStatus(){
 function promptConfirmRequest(requestId, deptName) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
   const slot = iv ? formatInterviewSlot(iv) : 'Not available';
+  const interviewers = (iv && iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
+  const venue = (iv && iv.scheduledVenue) ? iv.scheduledVenue : (iv && iv.meetingLink ? iv.meetingLink : 'Online / TBD');
 
   _pendingInstituteAction = { id: requestId, type: 'confirm-slot' };
   document.getElementById('statusModalTitle').textContent = 'Confirm Interview Slot';
   document.getElementById('statusModalText').innerHTML = `
     <div style="text-align:left;margin-bottom:14px;">
       <div style="display:grid;gap:10px;">
-        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:11px 14px;">
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
           <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#15803D;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
             <i class="fa-solid fa-sitemap" style="font-size:10px;"></i> Department
           </div>
           <div style="font-weight:700;font-size:14px;color:#1F2937;">${deptName}</div>
         </div>
-        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:11px 14px;">
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
           <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1D4ED8;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
             <i class="fa-solid fa-calendar-check" style="font-size:10px;"></i> Scheduled Slot
           </div>
           <div style="font-weight:700;font-size:14px;color:#1F2937;">${slot}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
+              <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
+            </div>
+            <div style="font-weight:700;font-size:13px;color:#1F2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${interviewers}">${interviewers}</div>
+          </div>
+          <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
+              <i class="fa-solid fa-location-dot" style="font-size:10px;"></i> Venue / Link
+            </div>
+            <div style="font-weight:700;font-size:13px;color:#1F2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${venue}">${venue}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1364,17 +1380,25 @@ function promptConfirmRequest(requestId, deptName) {
 function promptConfirmRescheduleRequest(requestId, deptName) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
   const slot = iv ? formatInterviewSlot(iv) : 'Not available';
+  const interviewers = (iv && iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
+
   _pendingInstituteAction = { id: requestId, type: 'confirm-reschedule' };
   document.getElementById('statusModalTitle').textContent = 'Confirm Rescheduled Interview';
   document.getElementById('statusModalText').innerHTML = `
     <div style="text-align:left;margin-bottom:14px;">
       <div style="display:grid;gap:10px;">
-        <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;padding:11px 14px;">
+        <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
           <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6D28D9;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
             <i class="fa-solid fa-rotate" style="font-size:10px;"></i> Rescheduled Slot
           </div>
           <div style="font-weight:800;font-size:14px;color:#1F2937;">${slot}</div>
           <div style="font-weight:700;font-size:12.5px;color:#6B7280;margin-top:3px;">${deptName}</div>
+        </div>
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
+          </div>
+          <div style="font-weight:700;font-size:13px;color:#1F2937;">${interviewers}</div>
         </div>
       </div>
     </div>
@@ -1385,16 +1409,26 @@ function promptConfirmRescheduleRequest(requestId, deptName) {
 function promptRejectRescheduleRequest(requestId, deptName) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
   const slot = iv ? formatInterviewSlot(iv) : 'Not available';
+  const interviewers = (iv && iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
+
   _pendingInstituteAction = { id: requestId, type: 'reject-reschedule' };
   document.getElementById('statusModalTitle').textContent = 'Reject Rescheduled Interview';
   document.getElementById('statusModalText').innerHTML = `
     <div style="text-align:left;margin-bottom:14px;">
-      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:11px 14px;">
-        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B91C1C;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-          <i class="fa-solid fa-triangle-exclamation" style="font-size:10px;"></i> Reject Reschedule
+      <div style="display:grid;gap:10px;">
+        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B91C1C;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size:10px;"></i> Reject Reschedule
+          </div>
+          <div style="font-weight:800;font-size:14px;color:#1F2937;">${slot}</div>
+          <div style="font-weight:700;font-size:12.5px;color:#6B7280;margin-top:3px;">${deptName}</div>
         </div>
-        <div style="font-weight:800;font-size:14px;color:#1F2937;">${slot}</div>
-        <div style="font-weight:700;font-size:12.5px;color:#6B7280;margin-top:3px;">${deptName}</div>
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
+          </div>
+          <div style="font-weight:700;font-size:13px;color:#1F2937;">${interviewers}</div>
+        </div>
       </div>
     </div>
     <p style="font-size:13px;color:#6B7280;">Rejecting will mark this request as <b>Rejected</b>.</p>`;
@@ -1959,6 +1993,8 @@ function openInterviewViewModal(requestId) {
   const slot = formatInterviewSlot(iv);
   const deptName = iv.departmentName || '—';
   const statusHtml = statusBadge(iv.status);
+  const interviewers = (iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
+  const venue = (iv.scheduledVenue) ? iv.scheduledVenue : (iv.meetingLink ? iv.meetingLink : 'Online / TBD');
 
   const modalHtml = `
     <div class="modal-overlay open" id="ivViewModal" onclick="if(event.target===this)document.getElementById('ivViewModal').remove()">
@@ -1997,6 +2033,28 @@ function openInterviewViewModal(requestId) {
             </div>
             <div style="background:var(--card);padding:12px 14px;">
               <span style="font-weight:700;font-size:14px;color:var(--dark);">${slot}</span>
+            </div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="border-radius:var(--radius-sm);border:1.5px solid #FDE68A;overflow:hidden;">
+              <div style="background:#FFFBEB;padding:8px 14px;border-bottom:1px solid #FDE68A;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-user-tie" style="color:#B45309;font-size:11px;"></i>
+                <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#B45309;">Interviewers</span>
+              </div>
+              <div style="background:var(--card);padding:12px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${interviewers}">
+                <span style="font-weight:700;font-size:14px;color:var(--dark);">${interviewers}</span>
+              </div>
+            </div>
+
+            <div style="border-radius:var(--radius-sm);border:1.5px solid #E2E8F0;overflow:hidden;">
+              <div style="background:#F8FAFC;padding:8px 14px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-location-dot" style="color:#475569;font-size:11px;"></i>
+                <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569;">Venue / Link</span>
+              </div>
+              <div style="background:var(--card);padding:12px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${venue}">
+                <span style="font-weight:700;font-size:14px;color:var(--dark);">${venue}</span>
+              </div>
             </div>
           </div>
 
