@@ -10,6 +10,7 @@ import com.interviewPlatform.repositories.InterviewRequestRepository;
 import com.interviewPlatform.repositories.MentorRepository;
 import com.interviewPlatform.repositories.StudentApplicationRepository;
 import com.interviewPlatform.repositories.StudentRepository;
+import com.interviewPlatform.repositories.InterviewEvaluationRepository;
 import com.interviewPlatform.entities.Mentor;
 import com.interviewPlatform.entities.Student;
 import com.interviewPlatform.enums.Status;
@@ -34,6 +35,7 @@ public class MentorDashboardController {
     private final StudentApplicationRepository applicationRepository;
     private final StudentFeedbackService feedbackService;
     private final MentorService mentorService;
+    private final InterviewEvaluationRepository interviewEvaluationRepository;
 
     @PreAuthorize("hasRole('MENTOR')")
     @GetMapping("/me")
@@ -77,9 +79,9 @@ public class MentorDashboardController {
                     : null;
                 
                 List<Double> scores = applicationRepository.findByStudentId(s.getId()).stream()
-                    .map(com.interviewPlatform.entities.StudentApplication::getEvaluation)
+                    .map(app -> interviewEvaluationRepository.findByApplicationId(app.getId()).orElse(null))
                     .filter(e -> e != null && e.getOverallScore() != null)
-                    .map(com.interviewPlatform.entities.StudentEvaluation::getOverallScore)
+                    .map(com.interviewPlatform.entities.InterviewEvaluation::getOverallScore)
                     .toList();
                 Double averageScore = scores.isEmpty() ? null : scores.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
 
