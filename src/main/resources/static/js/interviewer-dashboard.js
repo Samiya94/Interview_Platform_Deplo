@@ -734,18 +734,142 @@ async function submitEvalAndNext() {
   }
 }
 
-function openStudentModal(idx, fromToday) {
+function interviewerSwitchTab(el, panelId) {
+    document.querySelectorAll('#studentModal .modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#studentModal .modal-tab-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(panelId).classList.add('active');
+}
+
+async function openStudentModal(idx, fromToday) {
   const source = fromToday ? APP.scheduleStudents.filter(s => s.scheduledDate && s.scheduledDate.toDateString() === new Date().toDateString()) : APP.scheduleStudents;
   const s = source[idx];
   if (!s) return;
-  const detailsHtml =
-    `<div class="student-modal-banner"><div class="student-modal-avatar">${s.initials}</div><div><h3 style="font-size:15px;">${s.name}</h3><p style="font-size:13px;opacity:.85;margin-top:3px;">${s.className}</p><p style="font-size:12px;opacity:.7;margin-top:2px;">${s.email} · ${s.institute}</p></div></div>` +
-    `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">` +
-    `<div style="background:#F8FAFC;padding:10px;border-radius:var(--r);border-left:3px solid var(--secondary);"><div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;">Class</div><b>${s.className}</b></div>` +
-    `<div style="background:#F8FAFC;padding:10px;border-radius:var(--r);border-left:3px solid var(--secondary);"><div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;">Slot</div><b style="font-size:12.5px;">${s.scheduledText}</b></div></div>` +
-    `<div style="margin-bottom:13px;"><div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Domain</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span class="badge bg-info">${s.domain}</span></div></div>`;
-  document.getElementById('studentModalContent').innerHTML = wrapDetailsWithResume(detailsHtml, s.resumeUrl, s.resumeFileName, { height: '480px' });
+
+  // Reset to Overview tab
+  document.querySelectorAll('#studentModal .modal-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+  document.querySelectorAll('#studentModal .modal-tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
+
+  document.getElementById('modalStudentName').textContent = s.name;
+  document.getElementById('modalStudentMeta').innerHTML =
+      `<span><i class="fa-solid fa-graduation-cap" style="color:var(--secondary);margin-right:4px;"></i>${s.className}</span>` +
+      `<span><i class="fa-solid fa-envelope" style="color:var(--secondary);margin-right:4px;"></i>${s.email || '—'}</span>`;
+
+  if (s.profilePhotoUrl && s.profilePhotoUrl !== 'null' && s.profilePhotoUrl.trim() !== '') {
+      let url = s.profilePhotoUrl.startsWith('http') || s.profilePhotoUrl.startsWith('/') ? s.profilePhotoUrl : '/' + s.profilePhotoUrl;
+      document.getElementById('modalBanner').innerHTML =
+          `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
+              <div style="width:46px;height:46px;border-radius:50%;flex-shrink:0;">
+                  <img src="${url}" alt="${s.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,.35);">
+              </div>
+              <div>
+                  <div style="font-size:16px;font-weight:800;color:#fff;">${s.name}</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${s.className}</div>
+              </div>
+          </div>`;
+  } else {
+      document.getElementById('modalBanner').innerHTML =
+          `<div style="background:linear-gradient(135deg,var(--primary) 0%,#1e40af 55%,var(--secondary) 100%);padding:16px 22px;display:flex;align-items:center;gap:14px;">
+              <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">${s.initials}</div>
+              <div>
+                  <div style="font-size:16px;font-weight:800;color:#fff;">${s.name}</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${s.className}</div>
+              </div>
+          </div>`;
+  }
+
+  // OVERVIEW
+  document.getElementById('modalDomain').textContent = s.domain;
+  document.getElementById('modalClass').textContent = s.className;
+  document.getElementById('modalSlot').textContent = s.scheduledText;
+  
+  if (s.overallScore != null) {
+      const perf = s.overallScore >= 8 ? 'Excellent' : s.overallScore >= 6 ? 'Good' : 'Needs Work';
+      const c = s.overallScore >= 8 ? 'success' : s.overallScore >= 6 ? 'info' : 'warning';
+      document.getElementById('modalPerfBadge').innerHTML = `<span class="badge bg-${c}">${perf}</span>`;
+  } else {
+      document.getElementById('modalPerfBadge').innerHTML = `<span class="badge bg-neutral">Pending</span>`;
+  }
+
+  // Skills
+  const skillsContainer = document.getElementById('modalSkills');
+  if (s.skills && s.skills.length > 0) {
+      skillsContainer.innerHTML = `<div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Skills</div><div style="display:flex;flex-wrap:wrap;gap:6px;">` + 
+          s.skills.map(skill => `<span class="badge bg-secondary">${skill}</span>`).join('') + `</div>`;
+  } else {
+      skillsContainer.innerHTML = '';
+  }
+
+  // Projects
+  const projectsContainer = document.getElementById('modalProjects');
+  if (s.projects) {
+      projectsContainer.innerHTML = `<div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Projects</div><p style="font-size:13px;line-height:1.5;">${s.projects}</p>`;
+  } else {
+      projectsContainer.innerHTML = '';
+  }
+
+  // RESUME
+  const resumeContainer = document.getElementById('ivStudentResumeEmbed');
+  if (s.resumeUrl) {
+      const isPdf = s.resumeUrl.toLowerCase().endsWith('.pdf');
+      if (isPdf) {
+          resumeContainer.innerHTML = `<iframe src="${s.resumeUrl}" style="width:100%;height:450px;border:none;border-radius:var(--r);"></iframe>`;
+      } else {
+          resumeContainer.innerHTML = `<div style="text-align:center;padding:40px 20px;background:#F8FAFC;border-radius:var(--r);">
+              <i class="fa-solid fa-file-word" style="font-size:2.5rem;color:#2563EB;margin-bottom:12px;opacity:0.8;"></i>
+              <p style="margin-bottom:12px;font-size:13px;">Resume is in document format.</p>
+              <a href="${s.resumeUrl}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i> Download Resume</a>
+          </div>`;
+      }
+  } else {
+      resumeContainer.innerHTML = `<p style="color:var(--muted);font-size:13px;">No resume available.</p>`;
+  }
+
+  // FEEDBACK
+  const feedbackContainer = document.getElementById('ivFeedbackContent');
+  feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading feedback...</p>';
   openOverlay('studentModal');
+
+  // Fetch feedback report
+  if (s.applicationId) {
+      try {
+          const res = await secureFetch(`/api/interviewer/applications/${s.applicationId}/evaluation`);
+          if (res && res.ok) {
+              const evalData = await res.json();
+              
+              if (evalData && evalData.overallScore != null) {
+                  feedbackContainer.innerHTML = `
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                        <div style="background:#F8FAFC;padding:12px;border-radius:8px;border-left:3px solid var(--primary);">
+                            <div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:700;">Overall Score</div>
+                            <div style="font-size:18px;font-weight:800;">${evalData.overallScore.toFixed(1)} <span style="font-size:12px;color:var(--muted);font-weight:500;">/ 10</span></div>
+                        </div>
+                        <div style="background:#F0FDF4;padding:12px;border-radius:8px;border-left:3px solid var(--success);">
+                            <div style="font-size:10px;text-transform:uppercase;color:var(--success);margin-bottom:4px;font-weight:700;">Strengths</div>
+                            <div style="font-size:13px;">${evalData.strengths || 'None specified'}</div>
+                        </div>
+                        <div style="background:#FFFBEB;padding:12px;border-radius:8px;border-left:3px solid var(--warning);">
+                            <div style="font-size:10px;text-transform:uppercase;color:#B45309;margin-bottom:4px;font-weight:700;">Areas for Improvement</div>
+                            <div style="font-size:13px;">${evalData.improvements || 'None specified'}</div>
+                        </div>
+                        <div style="background:#EFF6FF;padding:12px;border-radius:8px;border-left:3px solid var(--info);">
+                            <div style="font-size:10px;text-transform:uppercase;color:var(--info);margin-bottom:4px;font-weight:700;">Remarks</div>
+                            <div style="font-size:13px;">${evalData.remarks || 'None specified'}</div>
+                        </div>
+                    </div>
+                  `;
+              } else {
+                  feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">Evaluation not yet submitted.</p>';
+              }
+          } else {
+              feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">Evaluation not yet submitted.</p>';
+          }
+      } catch (e) {
+          feedbackContainer.innerHTML = '<p style="color:var(--danger);font-size:13px;">Error loading feedback.</p>';
+      }
+  } else {
+      feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No application associated with this interview.</p>';
+  }
 }
 
 function updateHistCount() { const cards = document.querySelectorAll('#historyList .history-card'); let v = 0; cards.forEach(c => { if (c.style.display !== 'none') v++; }); setText('histCount', `${v} record${v !== 1 ? 's' : ''}`); }
