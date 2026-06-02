@@ -876,10 +876,12 @@ async function openStudentModal(idx, fromToday) {
                   }).join('');
               }
               return; // success, exit early
+          } else {
+              throw new Error("API returned status: " + (res ? res.status : "unknown"));
           }
       } catch (e) {
           console.error("Failed to fetch all reports:", e);
-          feedbackContainer.innerHTML = `<p style="color:var(--danger);font-size:13px;">Error loading feedback. Please ensure the server is updated and try again.</p>`;
+          feedbackContainer.innerHTML = `<p style="color:var(--danger);font-size:13px;">Error loading feedback. Please ensure your backend Java application is fully restarted so the new API endpoint is active.</p>`;
       }
   } else {
       feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No feedback available (Missing Student ID).</p>';
