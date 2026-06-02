@@ -243,14 +243,24 @@ public class InterviewerDashboardController {
         m.put("jobTitle", iv.getJobTitle());
         m.put("company", iv.getCompany());
         m.put("experience", iv.getExperience());
+        List<String> rawSkills = iv.getSkills();
+        List<String> cleanSkills = new java.util.ArrayList<>();
+        String ivEmail = iv.getUser() != null ? iv.getUser().getEmail() : null;
+        if (rawSkills != null) {
+            for (String s : rawSkills) {
+                if (ivEmail == null || !s.trim().equalsIgnoreCase(ivEmail.trim())) {
+                    cleanSkills.add(s);
+                }
+            }
+        }
         m.put("domain", iv.getDomain());
         m.put("qualification", iv.getQualification());
         m.put("linkedin", iv.getLinkedin());
-        m.put("skills", iv.getSkills());
+        m.put("skills", cleanSkills);
         m.put("bio", iv.getBio());
         m.put("profilePhotoUrl", iv.getProfilePhotoUrl());
         m.put("createdAt", iv.getCreatedAt());
-        m.put("email", iv.getUser() != null ? iv.getUser().getEmail() : null);
+        m.put("email", ivEmail);
         m.put("status", iv.getUser() != null && iv.getUser().getStatus() != null ? iv.getUser().getStatus().name() : null);
         String rawResume = iv.getResumeUrl();
         m.put("resumeUrl", (rawResume != null && !rawResume.isBlank()) ? rawResume : null);

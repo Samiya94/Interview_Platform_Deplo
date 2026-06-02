@@ -450,8 +450,8 @@ function renderLiveStudent() {
   const resumeLabel = s.resumeUrl ? friendlyResumeName(s.resumeFileName) : 'No resume uploaded';
   setText('live-resume-name', resumeLabel);
   setText('live-resume-name2', resumeLabel);
-  mountResumeEmbed('liveResumeEmbed', s.resumeUrl, s.resumeFileName, { height: '100%' });
-  mountResumeEmbed('liveResumeEmbed2', s.resumeUrl, s.resumeFileName, { height: '100%' });
+  mountResumeEmbed('liveResumeEmbed', s.resumeUrl, s.resumeFileName, { height: '70vh' });
+  mountResumeEmbed('liveResumeEmbed2', s.resumeUrl, s.resumeFileName, { height: '70vh' });
   const projectsHtml = renderProjectDetailsHtml(s);
   const projEl = document.getElementById('info-projects');
   if (projEl) projEl.innerHTML = projectsHtml;
