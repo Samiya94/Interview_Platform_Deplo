@@ -31,21 +31,23 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        if (userRepository.count() > 0) {
-            log.info("Database is already populated. Skipping Data Seeder.");
+        if (userRepository.findByEmail("institute@example.com").isPresent()) {
+            log.info("Mock data (Institute) already exists. Skipping Data Seeder.");
             return;
         }
 
         log.info("Starting Data Seeder: Generating 200 students and platform data...");
         String defaultPassword = passwordEncoder.encode("password123");
 
-        // 1. Create Admin
-        User adminUser = new User();
-        adminUser.setEmail("admin@platform.com");
-        adminUser.setPassword(passwordEncoder.encode("admin123"));
-        adminUser.setRole(Role.ADMIN);
-        adminUser.setStatus(Status.ACTIVE);
-        userRepository.save(adminUser);
+        // 1. Create Admin (if not exists)
+        if (userRepository.findByEmail("admin@platform.com").isEmpty()) {
+            User adminUser = new User();
+            adminUser.setEmail("admin@platform.com");
+            adminUser.setPassword(passwordEncoder.encode("admin123"));
+            adminUser.setRole(Role.ADMIN);
+            adminUser.setStatus(Status.ACTIVE);
+            userRepository.save(adminUser);
+        }
 
         // 2. Create Institute
         User instUser = new User();
