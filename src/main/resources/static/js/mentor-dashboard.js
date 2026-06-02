@@ -866,14 +866,26 @@ function showToast(msg, type) {
 
 /* ===== CHARTS ===== */
 var chartsInited = false;
-function initCharts() {
+async function initCharts() {
     if (chartsInited) return;
     if (typeof Chart === 'undefined') {
         console.error('Chart.js not loaded');
         return;
     }
+    
     chartsInited = true;
-    const total = departmentStudents.length || 0;
+    
+    // Fetch real report data
+    let reportData = null;
+    try {
+        const res = await secureFetch('/api/mentor/reports-data');
+        if (res && res.ok) reportData = await res.json();
+    } catch (e) {
+        console.error("Error fetching mentor report data", e);
+    }
+    
+    if (!reportData) return;
+
     const SEC = '#0D9488', SUC = '#16A34A', WARN = '#D97706', DAN = '#DC2626', GRAY = '#9CA3AF';
     const GRID = 'rgba(0,0,0,0.05)', LBL = '#6B7280', FONT = { family: 'Inter', size: 12 };
 
@@ -883,19 +895,20 @@ function initCharts() {
             type: 'doughnut',
             data: {
                 labels: ['Outstanding/Excellent', 'Good/Average', 'Below Avg/Poor', 'Not Evaluated'],
-                datasets: [{ data: [0, 0, 0, total || 1], backgroundColor: [SUC, WARN, DAN, GRAY], borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+                datasets: [{ data: reportData.scoreDistribution, backgroundColor: [SUC, WARN, DAN, GRAY], borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
             },
             options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'right', labels: { color: LBL, font: FONT, padding: 12, boxWidth: 11 } } } }
         });
     }
 
+    const mStats = reportData.monthlyStats;
     const sc = document.getElementById('scoreTrendChart');
     if (sc) {
         new Chart(sc, {
             type: 'line',
             data: {
-                labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
-                datasets: [{ label: 'Dept. Avg Score', data: [0, 0, 0, 0, 0, 0], borderColor: SEC, backgroundColor: 'rgba(13,148,136,0.08)', borderWidth: 2.5, pointBackgroundColor: SEC, pointRadius: 4, tension: 0.4, fill: true }]
+                labels: mStats.labels,
+                datasets: [{ label: 'Dept. Avg Score', data: mStats.avgScores, borderColor: SEC, backgroundColor: 'rgba(13,148,136,0.08)', borderWidth: 2.5, pointBackgroundColor: SEC, pointRadius: 4, tension: 0.4, fill: true }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: GRID }, ticks: { color: LBL, font: FONT } }, y: { min: 0, max: 10, grid: { color: GRID }, ticks: { color: LBL, font: FONT, stepSize: 2 } } } }
         });
@@ -906,10 +919,10 @@ function initCharts() {
         new Chart(ic, {
             type: 'bar',
             data: {
-                labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+                labels: mStats.labels,
                 datasets: [
-                    { label: 'Completed', data: [0, 0, 0, 0, 0, 0], backgroundColor: SEC, borderRadius: 4, barPercentage: 0.6 },
-                    { label: 'Scheduled', data: [0, 0, 0, 0, 0, 0], backgroundColor: 'rgba(13,148,136,0.22)', borderRadius: 4, barPercentage: 0.6 }
+                    { label: 'Completed', data: mStats.completed, backgroundColor: SEC, borderRadius: 4, barPercentage: 0.6 },
+                    { label: 'Scheduled', data: mStats.scheduled, backgroundColor: 'rgba(13,148,136,0.22)', borderRadius: 4, barPercentage: 0.6 }
                 ]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end', labels: { color: LBL, font: FONT, boxWidth: 11, padding: 9 } } }, scales: { x: { grid: { color: GRID }, ticks: { color: LBL, font: FONT } }, y: { min: 0, grid: { color: GRID }, ticks: { color: LBL, font: FONT, stepSize: 1 } } } }

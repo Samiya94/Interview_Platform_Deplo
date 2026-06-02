@@ -35,6 +35,7 @@ public record StudentDashboardStatsDTO(
         java.time.LocalDateTime scheduledDate,
         String meetingLink,
         String scheduledVenue,
-        String assignedInterviewerName
+        String assignedInterviewerName,
+        Double overallScore
     ) {}
 }

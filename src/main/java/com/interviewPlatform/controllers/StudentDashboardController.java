@@ -80,6 +80,9 @@ public class StudentDashboardController {
                 String interviewerName = app.getAssignedInterviewer() != null
                         ? app.getAssignedInterviewer().getFullName()
                         : (req.getAssignedInterviewer() != null ? req.getAssignedInterviewer().getFullName() : "");
+                var evalOpt = evaluationRepository.findByApplicationId(app.getId());
+                Double overallScore = evalOpt.isPresent() ? evalOpt.get().getOverallScore() : null;
+
                 return new StudentDashboardStatsDTO.StudentInterviewItemDTO(
                     app.getId(),
                     req.getId(),
@@ -92,7 +95,8 @@ public class StudentDashboardController {
                     scheduled,
                     req.getMeetingLink() != null ? req.getMeetingLink() : "",
                     req.getScheduledVenue() != null ? req.getScheduledVenue() : "",
-                    interviewerName
+                    interviewerName,
+                    overallScore
                 );
             })
             .sorted((a, b) -> {

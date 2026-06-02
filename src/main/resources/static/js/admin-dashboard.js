@@ -2118,6 +2118,21 @@ async function loadReportData(tab) {
                     if (canvas) canvas._chartInstance = chart;
                 }
             }
+
+            // Completion chart (Monthly)
+            const monthlyRes = await secureFetch('/api/admin/monthly-stats');
+            if (monthlyRes && monthlyRes.ok) {
+                const mStats = await monthlyRes.json();
+                const compCanvas = document.getElementById('completionChart');
+                if (compCanvas) {
+                    if (compCanvas._chartInstance) compCanvas._chartInstance.destroy();
+                    compCanvas._chartInstance = new Chart(compCanvas, {
+                        type: 'line',
+                        data: { labels: mStats.labels, datasets: [{ data: mStats.counts, borderColor: '#0D9488', backgroundColor: 'rgba(13,148,136,.08)', tension: .4, fill: true }] },
+                        options: { responsive: true, plugins: { legend: { display: false } } }
+                    });
+                }
+            }
         }
 
         if (tab === 'institute') {
@@ -2203,6 +2218,21 @@ async function loadReportData(tab) {
                     data: { labels: ['0-4', '5-6', '7-8', '9-10'], datasets: [{ data: stData.scoreDist, backgroundColor: ['#EF4444', '#F59E0B', '#3B82F6', '#10B981'] }] },
                     options: { responsive: true, plugins: { legend: { position: 'right' } }, cutout: '70%' }
                 });
+            }
+
+            // Student Trend Chart (Monthly Scores)
+            const mRes = await secureFetch('/api/admin/monthly-stats');
+            if (mRes && mRes.ok) {
+                const mData = await mRes.json();
+                const trendCanvas = document.getElementById('studentTrendChart');
+                if (trendCanvas) {
+                    if (trendCanvas._chartInstance) trendCanvas._chartInstance.destroy();
+                    trendCanvas._chartInstance = new Chart(trendCanvas, {
+                        type: 'line',
+                        data: { labels: mData.labels, datasets: [{ data: mData.scores || [], borderColor: '#1E3A8A', backgroundColor: 'rgba(30,58,138,.07)', tension: .4, fill: true }] },
+                        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } }
+                    });
+                }
             }
         }
     } catch (e) { console.error('Report data error:', e); }

@@ -92,6 +92,7 @@ public class AdminController {
 
         List<String> labels = new ArrayList<>();
         List<Long> counts = new ArrayList<>();
+        List<Double> scores = new ArrayList<>();
 
         // Last 6 months
         for (int i = 5; i >= 0; i--) {
@@ -107,14 +108,23 @@ public class AdminController {
                     && r.getCreatedAt().isAfter(start)
                     && r.getCreatedAt().isBefore(end))
                 .count();
+                
+            double monthScore = interviewEvaluationRepository.findAll().stream()
+                .filter(e -> e.getCreatedAt() != null
+                    && e.getCreatedAt().isAfter(start)
+                    && e.getCreatedAt().isBefore(end))
+                .mapToDouble(InterviewEvaluation::getOverallScore)
+                .average().orElse(0.0);
 
             labels.add(months[month - 1]);
             counts.add(count);
+            scores.add(Math.round(monthScore * 10.0) / 10.0);
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("labels", labels);
         result.put("counts", counts);
+        result.put("scores", scores);
         return ResponseEntity.ok(result);
     }
 

@@ -199,6 +199,78 @@ public class MentorDashboardController {
     return ResponseEntity.ok(result);
 }
 
+    @PreAuthorize("hasRole('MENTOR')")
+    @GetMapping("/reports-data")
+    public ResponseEntity<Map<String, Object>> getReportsData(Authentication auth) {
+        Mentor mentor = mentorRepository.findByUserEmail(auth.getName())
+            .orElseThrow(() -> new RuntimeException("Mentor not found"));
+
+        List<Student> students = studentRepository.findByDepartmentId(mentor.getDepartment().getId());
+        List<Long> studentIds = students.stream().map(Student::getId).toList();
+
+        List<com.interviewPlatform.entities.InterviewEvaluation> evals = interviewEvaluationRepository.findAll().stream()
+            .filter(e -> e.getApplication().getStudent() != null && studentIds.contains(e.getApplication().getStudent().getId()))
+            .toList();
+
+        long outstanding = evals.stream().filter(e -> e.getOverallScore() >= 9.0).count();
+        long good = evals.stream().filter(e -> e.getOverallScore() >= 6.0 && e.getOverallScore() < 9.0).count();
+        long below = evals.stream().filter(e -> e.getOverallScore() < 6.0).count();
+        long notEval = students.size() - evals.stream().map(e -> e.getApplication().getStudent().getId()).distinct().count();
+
+        List<String> labels = new java.util.ArrayList<>();
+        List<Long> completed = new java.util.ArrayList<>();
+        List<Long> scheduled = new java.util.ArrayList<>();
+        List<Double> avgScores = new java.util.ArrayList<>();
+
+        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        for (int i = 5; i >= 0; i--) {
+            int m = now.getMonthValue() - i;
+            int y = now.getYear();
+            if (m <= 0) { m += 12; y -= 1; }
+            
+            java.time.LocalDateTime start = java.time.LocalDateTime.of(y, m, 1, 0, 0);
+            java.time.LocalDateTime end = start.plusMonths(1);
+
+            long comp = applicationRepository.findAll().stream()
+                .filter(a -> a.getStudent() != null && studentIds.contains(a.getStudent().getId())
+                    && a.getStatus() == Status.COMPLETED
+                    && a.getUpdatedAt() != null && a.getUpdatedAt().isAfter(start) && a.getUpdatedAt().isBefore(end))
+                .count();
+                
+            long sched = applicationRepository.findAll().stream()
+                .filter(a -> a.getStudent() != null && studentIds.contains(a.getStudent().getId())
+                    && a.getStatus() == Status.APPROVED
+                    && a.getInterviewRequest() != null 
+                    && a.getInterviewRequest().getScheduledDate() != null
+                    && a.getInterviewRequest().getScheduledDate().isAfter(start)
+                    && a.getInterviewRequest().getScheduledDate().isBefore(end))
+                .count();
+
+            double avg = evals.stream()
+                .filter(e -> e.getCreatedAt() != null && e.getCreatedAt().isAfter(start) && e.getCreatedAt().isBefore(end))
+                .mapToDouble(com.interviewPlatform.entities.InterviewEvaluation::getOverallScore).average().orElse(0.0);
+
+            labels.add(months[m - 1]);
+            completed.add(comp);
+            scheduled.add(sched);
+            avgScores.add(Math.round(avg * 10.0) / 10.0);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("scoreDistribution", List.of(outstanding, good, below, notEval));
+        
+        Map<String, Object> monthly = new HashMap<>();
+        monthly.put("labels", labels);
+        monthly.put("completed", completed);
+        monthly.put("scheduled", scheduled);
+        monthly.put("avgScores", avgScores);
+        result.put("monthlyStats", monthly);
+
+        return ResponseEntity.ok(result);
+    }
+
     // Mentor sees student feedback reports
     @PreAuthorize("hasRole('MENTOR')")
     @GetMapping("/students/{studentId}/feedback-reports")

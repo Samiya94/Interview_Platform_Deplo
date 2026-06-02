@@ -1177,10 +1177,9 @@ function initPerfCharts(){
   var completed=(MY_INTERVIEWS||[]).filter(function(iv){return iv.status==='APPROVED';}).slice(-8);
   var hasData = completed.length > 0;
 
-  // Build per-interview score data (use averageScore as baseline since per-interview score may not exist)
+  // Build per-interview score data
   var lineLabels = hasData ? completed.map(function(_,i){return 'Int '+(i+1);}) : [];
-  var baseScore=(DASHBOARD_STATS&&DASHBOARD_STATS.averageScore!=null)?DASHBOARD_STATS.averageScore:null;
-  var lineData = hasData && baseScore != null ? completed.map(function(){ return baseScore; }) : [];
+  var lineData = hasData ? completed.map(function(iv){ return (iv.overallScore != null) ? parseFloat(iv.overallScore) : ((DASHBOARD_STATS && DASHBOARD_STATS.averageScore != null) ? DASHBOARD_STATS.averageScore : 0); }) : [];
 
   // Update performance stat cards.
   var interviewsDone = (DASHBOARD_STATS&&DASHBOARD_STATS.interviewsTaken!=null)?DASHBOARD_STATS.interviewsTaken:0;
@@ -1243,8 +1242,21 @@ function initPerfCharts(){
   var domainChartCanvas = document.getElementById('domainChart');
   if (domainChartCanvas) {
     var domainParent = domainChartCanvas.parentElement;
-    var domainMap={};(MY_INTERVIEWS||[]).forEach(function(iv){if(iv.expertise){iv.expertise.split(',').forEach(function(e){var k=e.trim();if(k)domainMap[k]=(domainMap[k]||0)+1;});}});
-    var dLabels=Object.keys(domainMap).slice(0,5),dData=dLabels.map(function(k){return Math.min(10,5+domainMap[k]);});
+    var domainMap={};
+    (MY_INTERVIEWS||[]).forEach(function(iv){
+      if(iv.expertise && iv.overallScore != null){
+        iv.expertise.split(',').forEach(function(e){
+          var k=e.trim();
+          if(k){
+            if(!domainMap[k]) domainMap[k] = { sum: 0, count: 0 };
+            domainMap[k].sum += parseFloat(iv.overallScore);
+            domainMap[k].count += 1;
+          }
+        });
+      }
+    });
+    var dLabels=Object.keys(domainMap).slice(0,5);
+    var dData=dLabels.map(function(k){return Math.round((domainMap[k].sum / domainMap[k].count) * 10) / 10;});
     if(!dLabels.length) {
       domainChartCanvas.style.display = 'none';
       var domainEmpty = domainParent.querySelector('.chart-empty-msg');
