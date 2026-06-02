@@ -119,7 +119,8 @@ public class StudentDashboardController {
             interviewItems,
             resumeFileName,
             resumeUrl,
-            student.getProjects()
+            student.getProjects(),
+            student.getProfilePhotoUrl()
         );
 
         return ResponseEntity.ok(stats);

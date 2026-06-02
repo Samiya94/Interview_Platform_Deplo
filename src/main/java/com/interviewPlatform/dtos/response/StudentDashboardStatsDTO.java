@@ -20,7 +20,8 @@ public record StudentDashboardStatsDTO(
     List<StudentInterviewItemDTO> interviews,
     String resumeFileName,
     String resumeUrl,
-    String projects
+    String projects,
+    String profilePhotoUrl
 ) {
     public record StudentInterviewItemDTO(
         Long applicationId,
