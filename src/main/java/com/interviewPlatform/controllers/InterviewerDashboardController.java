@@ -24,6 +24,8 @@ import com.interviewPlatform.repositories.InterviewerRepository;
 import com.interviewPlatform.repositories.StudentApplicationRepository;
 import com.interviewPlatform.repositories.StudentInterviewerRatingRepository;
 import com.interviewPlatform.services.InterviewerService;
+import com.interviewPlatform.services.StudentFeedbackService;
+import com.interviewPlatform.dtos.response.StudentFeedbackReportDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,6 +40,7 @@ public class InterviewerDashboardController {
     private final InterviewEvaluationRepository evaluationRepository;
     private final StudentInterviewerRatingRepository ratingRepository;
     private final InterviewerService interviewerService;
+    private final StudentFeedbackService feedbackService;
 
     @Value("${file.upload.dir:uploads/}")
     private String uploadDir;
@@ -122,6 +125,7 @@ public class InterviewerDashboardController {
         List<Map<String, Object>> result = apps.stream().map(a -> {
             Map<String, Object> m = new HashMap<>();
             m.put("applicationId", a.getId());
+            m.put("studentId", a.getStudent().getId());
             m.put("studentName",
                 a.getStudent().getFirstName() + " " + a.getStudent().getLastName());
             m.put("studentEmail", a.getStudent().getUser().getEmail());

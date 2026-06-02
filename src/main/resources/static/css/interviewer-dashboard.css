@@ -232,6 +232,8 @@ tr:hover td{background:#FAFBFF;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(3px);padding:14px;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--card);padding:22px;border-radius:var(--rl);width:560px;max-width:100%;max-height:92vh;overflow-y:auto;animation:fadeUp .25s ease;box-shadow:var(--shadow-lg);}
+.modal.narrow{width:400px;}
+.modal.wide{width:660px;}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .modal-header h3{font-size:16px;font-weight:800;}
 .modal-close{cursor:pointer;color:var(--muted);width:28px;height:28px;display:grid;place-items:center;border-radius:6px;transition:var(--tr);flex-shrink:0;}
