@@ -1149,10 +1149,11 @@ async function handleResumeUpload(input){
     mountResumeEmbed('studentProfileResumeEmbed', STUDENT_RESUME.url, STUDENT_RESUME.fileName, { height: '520px' });
     updateResumeUI();
     showToast('Resume uploaded successfully!');
-    input.value = '';
   } catch (e) {
     console.error('Resume upload error:', e);
     showToast('Network error uploading resume', 'error');
+  } finally {
+    input.value = '';
   }
 }
 

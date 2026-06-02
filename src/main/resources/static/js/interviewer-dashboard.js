@@ -1100,6 +1100,10 @@ async function handleCvUpload(input) {
       body: formData
     });
     if (res.ok) {
+      const data = await res.json();
+      const actualUrl = data.resumeUrl || ('/uploads/resumes/' + name);
+      const actualName = data.resumeFileName || name;
+      
       setText('cvName', name);
       setText('cvDate', new Date().toLocaleDateString());
       setText('cvFileNameText', name + ' — uploaded successfully');
@@ -1107,10 +1111,10 @@ async function handleCvUpload(input) {
       
       // Update APP object if present
       if (APP && APP.profile) {
-          APP.profile.resumeUrl = '/uploads/resumes/' + name;
-          APP.profile.resumeFileName = name;
+          APP.profile.resumeUrl = actualUrl;
+          APP.profile.resumeFileName = actualName;
       }
-      mountResumeEmbed('interviewerProfileResumeEmbed', '/uploads/resumes/' + name, name, { height: '420px' });
+      mountResumeEmbed('interviewerProfileResumeEmbed', actualUrl, name, { height: '420px' });
     } else {
       setText('cvFileNameText', 'Upload failed');
       showToast('CV upload failed', 'error');
@@ -1118,6 +1122,8 @@ async function handleCvUpload(input) {
   } catch (e) {
     setText('cvFileNameText', 'Upload error');
     showToast('CV upload error', 'error');
+  } finally {
+    input.value = '';
   }
 }
 function saveProfile() { showToast('Profile details updated in UI. Backend update endpoint can be added next.'); }
