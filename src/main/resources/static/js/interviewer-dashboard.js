@@ -521,7 +521,7 @@ function renderProfileReviews() {
   if (starsEl) {
     starsEl.innerHTML = '★★★★★'.slice(0, Math.round(avg)) + '<span style="color:#D1D5DB;">' + '★★★★★'.slice(Math.round(avg)) + '</span>';
   }
-  list.innerHTML = reviews.slice(0, 5).map(r => `<div class="review-item"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="font-size:13.5px;">${r.student}</b><div class="review-stars">${'★'.repeat(r.rating)}${'<span style="color:#D1D5DB;">' + '★'.repeat(5 - r.rating) + '</span>'}</div></div><div style="font-size:11.5px;color:var(--muted);margin-top:3px;">${r.domain} · ${r.institute} · ${r.date}</div><div style="font-size:13px;color:var(--dark);margin-top:7px;line-height:1.6;">${r.comment}</div></div>`).join('');
+  list.innerHTML = reviews.slice(0, 5).map(r => `<div class="review-item"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="font-size:13.5px;">${r.student}</b><div class="review-stars">${'★'.repeat(r.rating)}${'<span style="color:#D1D5DB;">' + '★'.repeat(5 - r.rating) + '</span>'}</div></div><div style="font-size:11.5px;color:var(--muted);margin-top:3px;">${r.domain} · ${r.institute} · ${r.date}</div><div style="font-size:13px;color:var(--dark);margin-top:7px;line-height:1.6;word-wrap:break-word;word-break:break-word;white-space:pre-wrap;">${r.comment}</div></div>`).join('');
 }
 
 function startRealtimeRefresh() {
