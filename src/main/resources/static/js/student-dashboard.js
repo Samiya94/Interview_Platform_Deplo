@@ -310,7 +310,7 @@ function renderFeedbackReports() {
     var row = document.createElement('tr');
     row.innerHTML =
       '<td><b>'+escHtml(dateStr)+'</b></td>'+
-      '<td>'+escHtml(r.departmentName||'Interview')+'</td>'+
+      '<td>'+escHtml(r.domainName||'Interview')+'</td>'+
       '<td>'+escHtml(r.interviewerName||'Interviewer')+'</td>'+
       '<td><span style="font-weight:700;color:var(--accent);">'+score+' / 10</span></td>'+
       '<td><span class="badge bg-success">Evaluated</span></td>'+
