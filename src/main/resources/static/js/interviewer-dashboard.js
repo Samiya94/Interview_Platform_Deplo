@@ -30,6 +30,7 @@ window.addEventListener('DOMContentLoaded', async function () {
 async function refreshInterviewerDashboard() {
   await loadInterviewerProfile();
   await loadAssignedInterviews();
+  await loadInterviewerReviews();
   renderSlotAlertBanner();
   renderNotifications();
   renderScheduleTables();
@@ -38,6 +39,15 @@ async function refreshInterviewerDashboard() {
   if (!APP.sessionActive) {
     renderLiveStudent();
   }
+}
+
+async function loadInterviewerReviews() {
+  try {
+    const res = await secureFetch('/api/interviewer/reviews');
+    if (!res || !res.ok) return;
+    APP.reviews = await res.json();
+    localStorage.setItem('interviewerReviews', JSON.stringify(APP.reviews));
+  } catch (e) { console.error('Reviews error:', e); }
 }
 
 async function loadInterviewerProfile() {

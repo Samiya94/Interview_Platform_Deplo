@@ -22,6 +22,7 @@ import com.interviewPlatform.repositories.InterviewEvaluationRepository;
 import com.interviewPlatform.repositories.InterviewRequestRepository;
 import com.interviewPlatform.repositories.InterviewerRepository;
 import com.interviewPlatform.repositories.StudentApplicationRepository;
+import com.interviewPlatform.repositories.StudentInterviewerRatingRepository;
 import com.interviewPlatform.services.InterviewerService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class InterviewerDashboardController {
     private final InterviewRequestRepository interviewRequestRepository;
     private final StudentApplicationRepository applicationRepository;
     private final InterviewEvaluationRepository evaluationRepository;
+    private final StudentInterviewerRatingRepository ratingRepository;
     private final InterviewerService interviewerService;
 
     @Value("${file.upload.dir:uploads/}")
@@ -73,6 +75,27 @@ public class InterviewerDashboardController {
         })
         .toList();
         return ResponseEntity.ok(result);
+    }
+
+    // ── Interviewer sees their reviews/feedback from students ──
+    @PreAuthorize("hasRole('INTERVIEWER')")
+    @GetMapping("/reviews")
+    public ResponseEntity<?> getInterviewerReviews(Authentication auth) {
+        Interviewer interviewer = interviewerRepository.findByUserEmail(auth.getName())
+            .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+
+        List<Map<String, Object>> reviews = ratingRepository.findByInterviewerId(interviewer.getId()).stream()
+            .map(r -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("student", r.getStudent().getFirstName() + " " + r.getStudent().getLastName());
+                map.put("rating", r.getRating());
+                map.put("comment", r.getFeedback());
+                map.put("domain", r.getApplication().getInterviewRequest().getDepartmentName());
+                map.put("institute", r.getApplication().getInterviewRequest().getInstitute() != null ? r.getApplication().getInterviewRequest().getInstitute().getInstituteName() : "");
+                map.put("date", r.getCreatedAt().toLocalDate().toString());
+                return map;
+            }).toList();
+        return ResponseEntity.ok(reviews);
     }
 
     // ── Interviewer sees the list of students for a specific interview ──
