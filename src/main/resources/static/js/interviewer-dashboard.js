@@ -223,7 +223,8 @@ function venueCell(iv) {
   if (iv && iv.meetingLink) {
     return `<a href="${iv.meetingLink}" target="_blank" rel="noopener" class="btn btn-s btn-sm" style="font-size:11px;padding:3px 8px;"><i class="fa-solid fa-video"></i> Join</a>`;
   }
-  if (iv && iv.scheduledVenue) return `<span style="font-size:12px;">${iv.scheduledVenue}</span>`;
+  if (iv && iv.instituteAddress) return `<span style="font-size:12px;">${escHtml(iv.instituteAddress)}</span>`;
+  if (iv && iv.scheduledVenue) return `<span style="font-size:12px;">${escHtml(iv.scheduledVenue)}</span>`;
   return '<span style="color:var(--muted);font-size:12px;">TBD</span>';
 }
 
@@ -471,7 +472,7 @@ function renderLiveStudent() {
 function renderHistory() {
   const list = document.getElementById('historyList');
   if (!list) return;
-  const completed = APP.scheduleStudents.filter(s => isCompleted(s.key));
+  const completed = APP.scheduleStudents.filter(s => s.evaluationSubmitted || isCompleted(s.key));
   const merged = [...completed].sort((a, b) => (b.scheduledDate || 0) - (a.scheduledDate || 0));
   list.innerHTML = merged.map(s => `<div class="history-card" data-institute="${(s.institute || '').toLowerCase()}"><div class="history-card-header"><div style="display:flex;align-items:center;gap:13px;"><div style="width:42px;height:42px;border-radius:10px;background:#DBEAFE;color:#1E40AF;display:grid;place-items:center;font-weight:800;">${s.initials}</div><div><b style="font-size:15px;">${s.name}</b><div style="font-size:12px;color:var(--muted);margin-top:2px;"><i class="fa-solid fa-calendar"></i> ${s.scheduledDate ? s.scheduledDate.toLocaleDateString() : '—'} &nbsp;|&nbsp;<i class="fa-solid fa-building"></i> ${s.institute}</div></div></div><div style="display:flex;align-items:center;gap:10px;"><span class="badge bg-success">Completed</span><button class="btn btn-info btn-sm" onclick="openVideoModal('${(s.name || '').replace(/'/g, "\\'")}','${s.scheduledDate ? s.scheduledDate.toLocaleDateString() : '—'}', ${JSON.stringify(s.applicationId)}, ${JSON.stringify(s.interviewId)}, ${s.videoUrl ? '\'' + s.videoUrl.replace(/'/g, '%27') + '\'' : 'null'})"><i class="fa-solid fa-play"></i> Watch</button></div></div><div class="history-card-body"><div class="history-meta"><span>Domain</span><b>${s.domain}</b></div><div class="history-meta"><span>CGPA</span><b>${s.cgpa}</b></div><div class="history-meta"><span>Status</span><b>Evaluation Submitted</b></div></div></div>`).join('');
   populateInstituteFilter(merged);
@@ -489,7 +490,7 @@ function populateInstituteFilter(items) {
 
 function renderProfileStats() {
   const total = APP.scheduleStudents.length;
-  const completed = APP.scheduleStudents.filter(s => isCompleted(s.key)).length;
+  const completed = APP.scheduleStudents.filter(s => s.evaluationSubmitted || isCompleted(s.key)).length;
   setText('profTotalInterviews', total);
   setText('profCompleted', completed);
   setText('profAvgDuration', completed ? '45 min' : '—');
@@ -1147,7 +1148,11 @@ function fillSkills(skills) {
   });
 }
 function mapPerformanceToRating(perf) { if (perf.includes('Excellent')) return 5; if (perf.includes('Very Good')) return 5; if (perf.includes('Good')) return 4; if (perf.includes('Average')) return 3; if (perf.includes('Needs')) return 2; return 1; }
-function isCompleted(key) { return !!APP.completed[key]; }
+function isCompleted(key) { 
+  if (APP.completed[key]) return true;
+  const s = APP.scheduleStudents ? APP.scheduleStudents.find(st => st.key === key) : null;
+  return s ? !!s.evaluationSubmitted : false;
+}
 function getInitials(name) { return (name || '').split(' ').filter(Boolean).map(x => x[0]).join('').slice(0, 2).toUpperCase() || 'IV'; }
 function setText(id, value) { const el = document.getElementById(id); if (el) el.textContent = value; }
 

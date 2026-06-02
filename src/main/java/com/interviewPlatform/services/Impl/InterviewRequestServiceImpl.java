@@ -404,6 +404,7 @@ public class InterviewRequestServiceImpl implements InterviewRequestService {
         assignedNames,
         req.getInstitute() != null ? req.getInstitute().getId() : null,
         req.getInstitute() != null ? req.getInstitute().getInstituteName() : null,
+        req.getInstitute() != null ? req.getInstitute().getAddress() : null,
         req.getAssignedInterviewer() != null ? req.getAssignedInterviewer().getId() : null,
         req.getAssignedInterviewer() != null ? req.getAssignedInterviewer().getFullName() : null
     );

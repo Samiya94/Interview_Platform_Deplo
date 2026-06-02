@@ -26,6 +26,7 @@ public record InterviewRequestResponseDTO(
     // Institute info (useful for admin view)
     Long instituteId,
     String instituteName,
+    String instituteAddress,
     // Assigned interviewer info
     Long assignedInterviewerId,
     String assignedInterviewerName
