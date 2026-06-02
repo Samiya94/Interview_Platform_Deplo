@@ -1005,9 +1005,9 @@ function openReport(report) {
   document.getElementById('rt-feedback').innerHTML =
     '<div style="display:flex;flex-direction:column;gap:14px;">'+
       (rubricRows ? '<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">Evaluation Rubric</div>'+rubricRows+'</div>' : '')+
-      (ev.strengths ? '<div><div style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:6px;">Strengths</div><p style="line-height:1.7;">'+escHtml(ev.strengths)+'</p></div>' : '')+
-      (ev.improvements ? '<div><div style="font-size:11px;font-weight:700;color:var(--warning);margin-bottom:6px;">Areas for Improvement</div><p style="line-height:1.7;">'+escHtml(ev.improvements)+'</p></div>' : '')+
-      (ev.remarks ? '<div><div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">Remarks</div><p style="line-height:1.7;">'+escHtml(ev.remarks)+'</p></div>' : '')+
+      (ev.strengths ? '<div style="background:#DCFCE7;padding:10px;border-radius:6px;font-size:13px;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;"><b style="color:#166534;display:block;margin-bottom:4px;">Strengths:</b><span style="color:#15803D;">'+escHtml(ev.strengths)+'</span></div>' : '')+
+      (ev.improvements ? '<div style="background:#FEF3C7;padding:10px;border-radius:6px;font-size:13px;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;"><b style="color:#92400E;display:block;margin-bottom:4px;">Improvements:</b><span style="color:#B45309;">'+escHtml(ev.improvements)+'</span></div>' : '')+
+      (ev.remarks ? '<div style="background:#E0E7FF;padding:10px;border-radius:6px;font-size:13px;white-space:pre-wrap;word-break:break-word;"><b style="color:#3730A3;display:block;margin-bottom:4px;">Remarks:</b><span style="color:#4338CA;font-weight:500;">'+escHtml(ev.remarks)+'</span></div>' : '')+
       (report.hasStudentRating ? '<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--r);padding:12px 14px;"><div style="font-size:11px;font-weight:700;color:#92400E;margin-bottom:4px;">Your rating for interviewer</div><div>'+report.studentRating+' / 5 stars</div>'+(report.studentRatingFeedback ? '<p style="margin-top:6px;font-size:13px;">'+escHtml(report.studentRatingFeedback)+'</p>' : '')+'</div>' : '')+
     '</div>';
   if (report.videoUrl) {
@@ -1512,7 +1512,7 @@ async function handleProfilePic(input) {
   formData.append('photo', file);
 
   try {
-    const res = await fetch('/api/student/me/photo', {
+    const res = await fetch('/api/students/me/photo', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + getToken() },
       body: formData
