@@ -1358,17 +1358,17 @@ function promptConfirmRequest(requestId, deptName) {
           <div style="font-weight:700;font-size:14px;color:#1F2937;">${slot}</div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);height:100%;">
             <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
               <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
             </div>
-            <div style="font-weight:700;font-size:13px;color:#1F2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${interviewers}">${interviewers}</div>
+            <div style="font-weight:700;font-size:13px;color:#1F2937;word-break:break-word;">${interviewers}</div>
           </div>
-          <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+          <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);height:100%;">
             <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
               <i class="fa-solid fa-location-dot" style="font-size:10px;"></i> Venue / Link
             </div>
-            <div style="font-weight:700;font-size:13px;color:#1F2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${venue}">${venue}</div>
+            <div style="font-weight:700;font-size:13px;color:#1F2937;word-break:break-word;">${venue}</div>
           </div>
         </div>
       </div>
@@ -1990,90 +1990,68 @@ async function loadDeptStudents(deptId, containerId) {
 function openInterviewViewModal(requestId) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
   if (!iv) return;
-  const slot = formatInterviewSlot(iv);
   const deptName = iv.departmentName || '—';
-  const statusHtml = statusBadge(iv.status);
-  const interviewers = (iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
-  const venue = (iv.scheduledVenue) ? iv.scheduledVenue : (iv.meetingLink ? iv.meetingLink : 'Online / TBD');
+  const interviewers = (iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : '—';
+  const venue = (dashboardState.institute && dashboardState.institute.address) ? dashboardState.institute.address : (iv.instituteAddress ? iv.instituteAddress : '—');
+  
+  let dateObj = iv.scheduledDate || iv.startDate;
+  let dateStr = '—';
+  let timeStr = '—';
+  if (dateObj) {
+    const d = new Date(dateObj);
+    dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+  const instName = (dashboardState.institute && dashboardState.institute.name) ? dashboardState.institute.name : (iv.instituteName ? iv.instituteName : '—');
+  const domain = (iv.expertise && iv.expertise.length > 0) ? iv.expertise.join(', ') : '—';
+  const reqStudents = iv.numberOfStudentsRequired || '—';
 
   const modalHtml = `
-    <div class="modal-overlay open" id="ivViewModal" onclick="if(event.target===this)document.getElementById('ivViewModal').remove()">
-      <div class="modal" style="max-width:440px;width:95%;">
-        <div class="modal-header" style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:0;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:9px;background:#EFF6FF;display:grid;place-items:center;flex-shrink:0;">
-              <i class="fa-solid fa-calendar-check" style="color:var(--primary);font-size:15px;"></i>
-            </div>
-            <div>
-              <h3 style="font-size:15px;font-weight:800;color:var(--dark);line-height:1.2;">Interview Details</h3>
-              <p style="font-size:11.5px;color:var(--muted);margin-top:1px;">Confirmed interview slot information</p>
-            </div>
-          </div>
-          <button class="modal-close" onclick="document.getElementById('ivViewModal').remove()" style="background:var(--bg);border:none;width:30px;height:30px;border-radius:6px;cursor:pointer;display:grid;place-items:center;color:var(--muted);font-size:16px;transition:var(--transition);"
-            onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+    <div class="modal-overlay open" id="ivViewModal" style="backdrop-filter: blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999;" onclick="if(event.target===this)document.getElementById('ivViewModal').remove()">
+      <div class="modal" style="max-width:650px;width:100%;border-radius:12px;padding:30px;background:#ffffff;box-shadow:0 10px 25px rgba(0,0,0,0.1);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+          <h2 style="font-size:20px;font-weight:800;color:#111827;margin:0;">Interview Details</h2>
+          <button onclick="document.getElementById('ivViewModal').remove()" style="background:none;border:none;font-size:20px;color:#6B7280;cursor:pointer;display:grid;place-items:center;padding:5px;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div style="padding:20px;display:grid;gap:12px;">
 
-          <div style="border-radius:var(--radius-sm);border:1.5px solid #BFDBFE;overflow:hidden;">
-            <div style="background:#EFF6FF;padding:8px 14px;border-bottom:1px solid #BFDBFE;display:flex;align-items:center;gap:6px;">
-              <i class="fa-solid fa-sitemap" style="color:var(--primary);font-size:11px;"></i>
-              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--primary);">Department</span>
-            </div>
-            <div style="background:var(--card);padding:12px 14px;">
-              <span style="font-weight:700;font-size:15px;color:var(--dark);">${deptName}</span>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;align-items:stretch;">
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Institute</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${instName}</div>
           </div>
-
-          <div style="border-radius:var(--radius-sm);border:1.5px solid #BBF7D0;overflow:hidden;">
-            <div style="background:#F0FDF4;padding:8px 14px;border-bottom:1px solid #BBF7D0;display:flex;align-items:center;gap:6px;">
-              <i class="fa-solid fa-clock" style="color:#16A34A;font-size:11px;"></i>
-              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#16A34A;">Scheduled Slot</span>
-            </div>
-            <div style="background:var(--card);padding:12px 14px;">
-              <span style="font-weight:700;font-size:14px;color:var(--dark);">${slot}</span>
-            </div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Department</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${deptName}</div>
           </div>
-          
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div style="border-radius:var(--radius-sm);border:1.5px solid #FDE68A;overflow:hidden;">
-              <div style="background:#FFFBEB;padding:8px 14px;border-bottom:1px solid #FDE68A;display:flex;align-items:center;gap:6px;">
-                <i class="fa-solid fa-user-tie" style="color:#B45309;font-size:11px;"></i>
-                <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#B45309;">Interviewers</span>
-              </div>
-              <div style="background:var(--card);padding:12px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${interviewers}">
-                <span style="font-weight:700;font-size:14px;color:var(--dark);">${interviewers}</span>
-              </div>
-            </div>
-
-            <div style="border-radius:var(--radius-sm);border:1.5px solid #E2E8F0;overflow:hidden;">
-              <div style="background:#F8FAFC;padding:8px 14px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:6px;">
-                <i class="fa-solid fa-location-dot" style="color:#475569;font-size:11px;"></i>
-                <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569;">Venue / Link</span>
-              </div>
-              <div style="background:var(--card);padding:12px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${venue}">
-                <span style="font-weight:700;font-size:14px;color:var(--dark);">${venue}</span>
-              </div>
-            </div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Interviewers</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${interviewers}</div>
           </div>
-
-          <div style="border-radius:var(--radius-sm);border:1.5px solid var(--border);overflow:hidden;">
-            <div style="background:var(--bg);padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
-              <i class="fa-solid fa-circle-half-stroke" style="color:var(--muted);font-size:11px;"></i>
-              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Status</span>
-            </div>
-            <div style="background:var(--card);padding:12px 14px;">
-              ${statusHtml}
-            </div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Domain</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${domain}</div>
           </div>
-
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Date</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${dateStr}</div>
+          </div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Time</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${timeStr}</div>
+          </div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Venue</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${venue}</div>
+          </div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Students Required</div>
+            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${reqStudents}</div>
+          </div>
         </div>
-        <div style="padding:0 20px 20px;">
-          <button class="btn btn-ghost" style="width:100%;justify-content:center;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-weight:600;font-size:13.5px;" onclick="document.getElementById('ivViewModal').remove()">
-            <i class="fa-solid fa-xmark" style="font-size:11px;"></i> Close
-          </button>
-        </div>
+
+        <button onclick="document.getElementById('ivViewModal').remove()" style="width:100%;background:#1E3A8A;color:#fff;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:15px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1E3A8A'">
+          Close
+        </button>
       </div>
     </div>`;
   document.body.insertAdjacentHTML('beforeend', modalHtml);
