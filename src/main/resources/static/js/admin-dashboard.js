@@ -432,7 +432,7 @@ async function loadActiveInterviewers() {
         tbody.innerHTML = '';
 
         if (interviewers.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px;">No active interviewers yet</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;">No active interviewers yet</td></tr>';
             return;
         }
 
@@ -474,7 +474,6 @@ async function loadActiveInterviewers() {
                     <b>${name}</b></div></td>
                 <td style="font-size:12px;color:var(--muted);">${iv.location || '—'}</td>
                 <td>${iv.domain || '—'}</td>
-                <td>—</td>
                 <td><span style="color:#EAB308;font-weight:700;">★ ${iv.averageRating > 0 ? iv.averageRating : '—'}</span></td>
                 <td><span class="badge ${isActive ? 'bg-success' : 'bg-danger'} status-badge">${isActive ? 'Active' : 'Inactive'}</span></td>
                 <td><div style="display:flex;gap:5px;flex-wrap:wrap;">
