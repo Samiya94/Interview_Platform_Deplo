@@ -544,9 +544,9 @@ async function loadAllInterviewsTable() {
             const dateStr = dt ? dt.toLocaleDateString('en', { month: 'short', day: '2-digit', year: 'numeric' }) : '—';
             const timeStr = dt ? dt.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) : '';
 
-            const studentsVal = (req.numberOfStudentsRequired !== null && req.numberOfStudentsRequired !== undefined)
-                ? req.numberOfStudentsRequired
-                : '—';
+            const studentsVal = (req.registeredStudentsCount !== null && req.registeredStudentsCount !== undefined)
+                ? req.registeredStudentsCount
+                : '0';
             let statusBadgeClass = 'bg-pending';
             let statusBadgeText = 'Pending';
             if (req.status === 'COMPLETED') {
@@ -571,7 +571,7 @@ async function loadAllInterviewsTable() {
                 time: timeStr,
                 students: studentsVal,
                 status: rowStatus,
-                venue: req.scheduledVenue || '—',
+                venue: req.instituteAddress || '—',
                 departments: req.departmentName || '—'
             };
 
@@ -603,22 +603,55 @@ async function loadAllInterviewsTable() {
 function openInterviewDetailsModal(requestId) {
     const d = interviewDetailsCache[requestId] || {};
 
-    const content = document.getElementById('interviewDetailsContent');
-    if (!content) return;
+    const modalHtml = `
+      <div class="modal-overlay open" id="ivViewModalAdmin" style="backdrop-filter: blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999;" onclick="if(event.target===this)document.getElementById('ivViewModalAdmin').remove()">
+        <div class="modal" style="max-width:650px;width:100%;border-radius:12px;padding:30px;background:#ffffff;box-shadow:0 10px 25px rgba(0,0,0,0.1);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <h2 style="font-size:20px;font-weight:800;color:#111827;margin:0;">Interview Details</h2>
+            <button onclick="document.getElementById('ivViewModalAdmin').remove()" style="background:none;border:none;font-size:20px;color:#6B7280;cursor:pointer;display:grid;place-items:center;padding:5px;"><i class="fa-solid fa-xmark"></i></button>
+          </div>
 
-    content.innerHTML = `
-        <div class="detail-grid">
-            <div class="detail-item"><span>Institute</span><b>${d.institute || '—'}</b></div>
-            <div class="detail-item"><span>Department</span><b>${d.departments || '—'}</b></div>
-            <div class="detail-item"><span>Interviewers</span><b>${d.interviewers || '—'}</b></div>
-            <div class="detail-item"><span>Domain</span><b>${d.domain || '—'}</b></div>
-            <div class="detail-item"><span>Date</span><b>${d.date || '—'}</b></div>
-            <div class="detail-item"><span>Time</span><b>${d.time || '—'}</b></div>
-            <div class="detail-item"><span>Venue</span><b>${d.venue || '—'}</b></div>
-            <div class="detail-item"><span>Students Required</span><b>${d.students ?? '—'}</b></div>
-        </div>`;
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;align-items:stretch;">
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Institute</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.institute || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Department</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.departments || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Interviewers</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.interviewers || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Domain</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.domain || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Date</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.date || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Time</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.time || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Venue</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.venue || '—'}</div>
+            </div>
+            <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+              <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Students Applied</div>
+              <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${d.students ?? '—'}</div>
+            </div>
+          </div>
 
-    openOverlay('interviewDetailsModal');
+          <button onclick="document.getElementById('ivViewModalAdmin').remove()" style="width:100%;background:#1E3A8A;color:#fff;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:15px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1E3A8A'">
+            Close
+          </button>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
 /* ═══════════════════════════════════════
