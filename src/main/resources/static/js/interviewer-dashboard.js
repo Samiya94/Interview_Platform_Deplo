@@ -1050,8 +1050,8 @@ function viewStudentResume() {
   // Set both object[data] (primary) and iframe[src] (fallback)
   const obj = document.getElementById('resumeViewerObject');
   const frame = document.getElementById('resumeViewerFrame');
-  if (obj) obj.data = absUrl;
-  if (frame) frame.src = absUrl + '#toolbar=1&navpanes=0';
+  if (obj) obj.data = absUrl + '#view=FitH';
+  if (frame) frame.src = absUrl + '#toolbar=1&navpanes=0&view=FitH';
   openOverlay('resumeViewerModal');
 }
 async function handleProfilePic(input) {

@@ -272,7 +272,7 @@ function buildResumeEmbedHtml(resumeUrl, resumeFileName, options) {
             '<a href="' + abs + '" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="background:#1f2937;color:#fff;border-color:#374151;">Open</a>' +
             '<a href="' + abs + '" download class="btn btn-s btn-sm"><i class="fa-solid fa-download"></i></a>' +
             '</div>' +
-            '<iframe class="resume-embed-frame" src="' + abs + '#toolbar=0&navpanes=0" title="Resume preview"></iframe>' +
+            '<iframe class="resume-embed-frame" src="' + abs + '#toolbar=0&navpanes=0&view=FitH" title="Resume preview"></iframe>' +
             '</div>'
         );
     }
