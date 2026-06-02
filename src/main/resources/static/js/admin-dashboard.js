@@ -1624,7 +1624,7 @@ function openFullProfileModal(d) {
                     <div style="background:#F8FAFC;border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:9px;">
                         <div style="display:flex;gap:10px;align-items:center;font-size:13px;">
                             <i class="fa-solid fa-envelope" style="color:var(--primary);width:16px;flex-shrink:0;"></i>
-                            <span>${d.email}</span>
+                            <span style="word-break:break-all;">${d.email}</span>
                         </div>
                         <div style="display:flex;gap:10px;align-items:center;font-size:13px;">
                             <i class="fa-solid fa-phone" style="color:var(--secondary);width:16px;flex-shrink:0;"></i>
@@ -1640,7 +1640,7 @@ function openFullProfileModal(d) {
                         </div>` : ''}
                         ${ensureUrl(d.linkedin) ? `<div style="display:flex;gap:10px;align-items:center;font-size:13px;">
                             <i class="fa-brands fa-linkedin" style="color:#0A66C2;width:16px;flex-shrink:0;"></i>
-                            <a href="${ensureUrl(d.linkedin)}" target="_blank" rel="noopener noreferrer" style="color:var(--secondary);">${d.linkedin.replace(/^https?:\/\//,'')}</a>
+                            <a href="${ensureUrl(d.linkedin)}" target="_blank" rel="noopener noreferrer" style="color:var(--secondary);word-break:break-all;">${d.linkedin.replace(/^https?:\/\//,'')}</a>
                         </div>` : ''}
                         <div style="display:flex;gap:10px;align-items:center;font-size:13px;">
                             <i class="fa-solid fa-circle" style="color:${isActive ? 'var(--success)' : 'var(--danger)'};width:16px;flex-shrink:0;font-size:9px;"></i>
