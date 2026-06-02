@@ -72,7 +72,8 @@ function formatStatusLabel(raw) {
     RESCHEDULED: 'Rescheduled',
     CANCELLED: 'Cancelled',
     AWAITING_CONFIRMATION: 'Awaiting Confirmation',
-    REJECTED: 'Rejected'
+    REJECTED: 'Rejected',
+    COMPLETED: 'Completed'
   };
   return labels[value] || 'Pending';
 }
@@ -1055,8 +1056,8 @@ function resetFilters(){
 /* ═══════════════ STATUS BADGE ═══════════════ */
 function statusBadge(s){
   const label = formatStatusLabel(s);
-  const map = {Pending:'bg-pending',Confirmed:'bg-success',Rescheduled:'bg-purple',Cancelled:'bg-cancel','Awaiting Confirmation':'bg-info',Rejected:'bg-cancel'};
-  const ico = {Pending:'fa-clock',Confirmed:'fa-circle-check',Rescheduled:'fa-rotate',Cancelled:'fa-ban','Awaiting Confirmation':'fa-hourglass-half',Rejected:'fa-circle-xmark'};
+  const map = {Pending:'bg-pending',Confirmed:'bg-success',Rescheduled:'bg-purple',Cancelled:'bg-cancel','Awaiting Confirmation':'bg-info',Rejected:'bg-cancel',Completed:'bg-success'};
+  const ico = {Pending:'fa-clock',Confirmed:'fa-circle-check',Rescheduled:'fa-rotate',Cancelled:'fa-ban','Awaiting Confirmation':'fa-hourglass-half',Rejected:'fa-circle-xmark',Completed:'fa-check-double'};
   return `<span class="badge ${map[label]||'bg-pending'}"><i class="fa-solid ${ico[label]||'fa-clock'}"></i> ${label}</span>`;
 }
 
