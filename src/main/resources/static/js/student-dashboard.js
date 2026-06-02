@@ -350,7 +350,7 @@ function renderInterviewTimeline() {
     return '<div class="tl-item ' + cls + '">' +
       '<div class="tl-content">' +
         '<div style="display:flex;justify-content:space-between;">' +
-          '<b style="font-size:13px;">' + escHtml(iv.topic) + '</b>' +
+          '<b style="font-size:13px;">' + escHtml(iv.expertise || iv.topic) + '</b>' +
           '<span class="badge ' + badgeClass + '">' + escHtml(badgeText) + '</span>' +
         '</div>' +
         '<div style="font-size:12px;color:var(--muted);margin-top:3px;">' +
