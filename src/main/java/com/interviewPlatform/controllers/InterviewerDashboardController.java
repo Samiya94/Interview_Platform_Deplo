@@ -156,6 +156,12 @@ public class InterviewerDashboardController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("hasRole('INTERVIEWER')")
+    @GetMapping("/students/{studentId}/feedback-reports")
+    public ResponseEntity<List<StudentFeedbackReportDTO>> getStudentFeedbackReports(@PathVariable Long studentId) {
+        return ResponseEntity.ok(feedbackService.getFeedbackReportsByStudentId(studentId));
+    }
+
     // ── NEW: Upload interview video for a specific student application ──
     @PreAuthorize("hasRole('INTERVIEWER')")
     @PostMapping("/assigned-interviews/{interviewId}/students/{applicationId}/upload-video")
