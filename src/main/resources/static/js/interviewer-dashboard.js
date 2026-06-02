@@ -804,7 +804,11 @@ async function openStudentModal(idx, fromToday) {
   // Projects
   const projectsContainer = document.getElementById('modalProjects');
   if (s.projects) {
-      projectsContainer.innerHTML = `<div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Projects</div><p style="font-size:13px;line-height:1.5;">${s.projects}</p>`;
+      projectsContainer.innerHTML = `
+      <div style="background:#F8FAFC;border-left:3px solid var(--secondary);padding:14px;border-radius:var(--rl);margin-bottom:16px;">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Projects</div>
+        <p style="font-size:13px;line-height:1.6;color:var(--dark);margin:0;white-space:pre-wrap;">${s.projects}</p>
+      </div>`;
   } else {
       projectsContainer.innerHTML = '';
   }
@@ -835,46 +839,79 @@ async function openStudentModal(idx, fromToday) {
   if (s.studentId) {
       try {
           const res = await secureFetch(`/api/interviewer/students/${s.studentId}/feedback-reports`);
-          let reports = [];
           if (res && res.ok) {
-              reports = await res.json();
-          }
-          
-          const completed = reports.filter(r => r.evaluation);
-          
-          if (!completed.length) {
-              feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No feedback available yet.</p>';
-          } else {
-              feedbackContainer.innerHTML = completed.map(r => {
-                  const ev = r.evaluation;
-                  const score = ev.overallScore != null ? `<span style="background:var(--primary);color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;">${ev.overallScore.toFixed(1)}/10</span>` : '';
-                  return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
-                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-                          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:#F1F5F9;padding:3px 8px;border-radius:4px;"><i class="fa-regular fa-calendar" style="margin-right:4px;"></i>${new Date(r.scheduledDate).toLocaleDateString()}</span>
-                          <span style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;background:#EFF6FF;padding:3px 8px;border-radius:4px;"><i class="fa-solid fa-user-tie" style="margin-right:4px;"></i>${r.interviewerName}</span>
-                          ${score}
-                      </div>
-                      <div class="feedback-block" style="border-left-color:var(--success);background:#F0FDF4;margin-bottom:8px;">
-                          <div class="fb-meta" style="color:#166534;font-weight:700;"><i class="fa-solid fa-arrow-trend-up" style="margin-right:4px;"></i>Strengths</div>
-                          <div class="fb-text">${ev.strengths || '—'}</div>
-                      </div>
-                      <div class="feedback-block" style="border-left-color:var(--warning);background:#FFFBEB;margin-bottom:8px;">
-                          <div class="fb-meta" style="color:#B45309;font-weight:700;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px;"></i>Areas for Improvement</div>
-                          <div class="fb-text">${ev.improvements || '—'}</div>
-                      </div>
-                      <div class="feedback-block" style="border-left-color:var(--info);background:#EFF6FF;margin-bottom:0;">
-                          <div class="fb-meta" style="color:#0369A1;font-weight:700;"><i class="fa-regular fa-comment-dots" style="margin-right:4px;"></i>Remarks</div>
-                          <div class="fb-text">${ev.remarks || '—'}</div>
-                      </div>
-                  </div>`;
-              }).join('');
+              const reports = await res.json();
+              const completed = reports.filter(r => r.evaluation);
+              
+              if (!completed.length) {
+                  feedbackContainer.innerHTML = `<p style="color:var(--muted);font-size:13px;">No feedback available yet (0 completed reports out of ${reports.length} total applications).</p>`;
+              } else {
+                  feedbackContainer.innerHTML = completed.map(r => {
+                      const ev = r.evaluation;
+                      const score = ev.overallScore != null ? `<span style="background:var(--primary);color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;">${ev.overallScore.toFixed(1)}/10</span>` : '';
+                      return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+                          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                              <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:#F1F5F9;padding:3px 8px;border-radius:4px;"><i class="fa-regular fa-calendar" style="margin-right:4px;"></i>${new Date(r.scheduledDate).toLocaleDateString()}</span>
+                              <span style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;background:#EFF6FF;padding:3px 8px;border-radius:4px;"><i class="fa-solid fa-user-tie" style="margin-right:4px;"></i>${r.interviewerName}</span>
+                              ${score}
+                          </div>
+                          <div class="feedback-block" style="border-left-color:var(--success);background:#F0FDF4;margin-bottom:8px;">
+                              <div class="fb-meta" style="color:#166534;font-weight:700;"><i class="fa-solid fa-arrow-trend-up" style="margin-right:4px;"></i>Strengths</div>
+                              <div class="fb-text">${ev.strengths || '—'}</div>
+                          </div>
+                          <div class="feedback-block" style="border-left-color:var(--warning);background:#FFFBEB;margin-bottom:8px;">
+                              <div class="fb-meta" style="color:#B45309;font-weight:700;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px;"></i>Areas for Improvement</div>
+                              <div class="fb-text">${ev.improvements || '—'}</div>
+                          </div>
+                          <div class="feedback-block" style="border-left-color:var(--info);background:#EFF6FF;margin-bottom:0;">
+                              <div class="fb-meta" style="color:#0369A1;font-weight:700;"><i class="fa-regular fa-comment-dots" style="margin-right:4px;"></i>Remarks</div>
+                              <div class="fb-text">${ev.remarks || '—'}</div>
+                          </div>
+                      </div>`;
+                  }).join('');
+              }
+              return; // success, exit early
           }
       } catch (e) {
-          feedbackContainer.innerHTML = '<p style="color:var(--danger);font-size:13px;">Error loading feedback.</p>';
+          console.error("Failed to fetch all reports:", e);
       }
-  } else {
-      feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No feedback available.</p>';
   }
+
+  // Fallback if studentId is missing or API failed (fetch current application only)
+  if (s.applicationId) {
+      try {
+          const res = await secureFetch(`/api/interviewer/applications/${s.applicationId}/evaluation`);
+          if (res && res.ok) {
+              const evalData = await res.json();
+              if (evalData && evalData.overallScore != null) {
+                  feedbackContainer.innerHTML = `
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                        <div style="background:#F8FAFC;padding:12px;border-radius:8px;border-left:3px solid var(--primary);">
+                            <div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:700;">Overall Score</div>
+                            <div style="font-size:18px;font-weight:800;">${evalData.overallScore.toFixed(1)} <span style="font-size:12px;color:var(--muted);font-weight:500;">/ 10</span></div>
+                        </div>
+                        <div style="background:#F0FDF4;padding:12px;border-radius:8px;border-left:3px solid var(--success);">
+                            <div style="font-size:10px;text-transform:uppercase;color:var(--success);margin-bottom:4px;font-weight:700;">Strengths</div>
+                            <div style="font-size:13px;">${evalData.strengths || 'None specified'}</div>
+                        </div>
+                        <div style="background:#FFFBEB;padding:12px;border-radius:8px;border-left:3px solid var(--warning);">
+                            <div style="font-size:10px;text-transform:uppercase;color:#B45309;margin-bottom:4px;font-weight:700;">Areas for Improvement</div>
+                            <div style="font-size:13px;">${evalData.improvements || 'None specified'}</div>
+                        </div>
+                        <div style="background:#EFF6FF;padding:12px;border-radius:8px;border-left:3px solid var(--info);">
+                            <div style="font-size:10px;text-transform:uppercase;color:var(--info);margin-bottom:4px;font-weight:700;">Remarks</div>
+                            <div style="font-size:13px;">${evalData.remarks || 'None specified'}</div>
+                        </div>
+                    </div>
+                  `;
+                  return;
+              }
+          }
+      } catch(e) {
+          console.error("Failed to fetch application evaluation:", e);
+      }
+  }
+  feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No feedback available yet.</p>';
 }
 
 function updateHistCount() { const cards = document.querySelectorAll('#historyList .history-card'); let v = 0; cards.forEach(c => { if (c.style.display !== 'none') v++; }); setText('histCount', `${v} record${v !== 1 ? 's' : ''}`); }
