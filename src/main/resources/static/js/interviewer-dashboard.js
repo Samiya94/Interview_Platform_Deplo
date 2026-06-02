@@ -815,7 +815,7 @@ async function openStudentModal(idx, fromToday) {
   if (s.resumeUrl) {
       const isPdf = s.resumeUrl.toLowerCase().endsWith('.pdf');
       if (isPdf) {
-          resumeContainer.innerHTML = `<iframe src="${s.resumeUrl}" style="width:100%;height:75vh;border:none;border-radius:var(--r);"></iframe>`;
+          resumeContainer.innerHTML = `<iframe src="${s.resumeUrl}" style="width:100%;height:100%;min-height:65vh;border:none;border-radius:var(--r);"></iframe>`;
       } else {
           resumeContainer.innerHTML = `<div style="text-align:center;padding:40px 20px;background:#F8FAFC;border-radius:var(--r);">
               <i class="fa-solid fa-file-word" style="font-size:2.5rem;color:#2563EB;margin-bottom:12px;opacity:0.8;"></i>
@@ -860,17 +860,17 @@ async function openStudentModal(idx, fromToday) {
                               <span style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;background:#EFF6FF;padding:3px 8px;border-radius:4px;"><i class="fa-solid fa-user-tie" style="margin-right:4px;"></i>${r.interviewerName}</span>
                               ${score}
                           </div>
-                          <div class="feedback-block" style="border-left-color:var(--success);background:#F0FDF4;margin-bottom:8px;">
-                              <div class="fb-meta" style="color:#166534;font-weight:700;"><i class="fa-solid fa-arrow-trend-up" style="margin-right:4px;"></i>Strengths</div>
-                              <div class="fb-text">${ev.strengths || '—'}</div>
+                          <div class="feedback-block" style="border-left:3px solid var(--success);background:#F0FDF4;margin-bottom:8px;padding:12px 14px;border-radius:6px;">
+                              <div class="fb-meta" style="color:#166534;font-weight:700;font-size:11px;text-transform:uppercase;"><i class="fa-solid fa-arrow-trend-up" style="margin-right:4px;"></i>Strengths</div>
+                              <div class="fb-text" style="white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;color:var(--dark);margin-top:6px;">${ev.strengths || '—'}</div>
                           </div>
-                          <div class="feedback-block" style="border-left-color:var(--warning);background:#FFFBEB;margin-bottom:8px;">
-                              <div class="fb-meta" style="color:#B45309;font-weight:700;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px;"></i>Areas for Improvement</div>
-                              <div class="fb-text">${ev.improvements || '—'}</div>
+                          <div class="feedback-block" style="border-left:3px solid var(--warning);background:#FFFBEB;margin-bottom:8px;padding:12px 14px;border-radius:6px;">
+                              <div class="fb-meta" style="color:#B45309;font-weight:700;font-size:11px;text-transform:uppercase;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px;"></i>Areas for Improvement</div>
+                              <div class="fb-text" style="white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;color:var(--dark);margin-top:6px;">${ev.improvements || '—'}</div>
                           </div>
-                          <div class="feedback-block" style="border-left-color:var(--info);background:#EFF6FF;margin-bottom:0;">
-                              <div class="fb-meta" style="color:#0369A1;font-weight:700;"><i class="fa-regular fa-comment-dots" style="margin-right:4px;"></i>Remarks</div>
-                              <div class="fb-text">${ev.remarks || '—'}</div>
+                          <div class="feedback-block" style="border-left:3px solid var(--info);background:#EFF6FF;margin-bottom:0;padding:12px 14px;border-radius:6px;">
+                              <div class="fb-meta" style="color:#0369A1;font-weight:700;font-size:11px;text-transform:uppercase;"><i class="fa-regular fa-comment-dots" style="margin-right:4px;"></i>Remarks</div>
+                              <div class="fb-text" style="white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;color:var(--dark);margin-top:6px;">${ev.remarks || '—'}</div>
                           </div>
                       </div>`;
                   }).join('');
