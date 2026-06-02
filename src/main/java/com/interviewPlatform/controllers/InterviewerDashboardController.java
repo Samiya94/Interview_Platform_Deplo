@@ -62,9 +62,11 @@ public class InterviewerDashboardController {
             m.put("departmentName", r.getDepartmentName());
             m.put("instituteName",
                 r.getInstitute() != null ? r.getInstitute().getInstituteName() : "");
-            m.put("scheduledDate", r.getScheduledDate());
-            m.put("startDate", r.getStartDate());
-            m.put("endDate", r.getEndDate());
+            m.put("instituteAddress",
+                r.getInstitute() != null ? r.getInstitute().getAddress() : "");
+            m.put("scheduledDate", r.getScheduledDate() != null ? r.getScheduledDate().toString() : null);
+            m.put("startDate", r.getStartDate() != null ? r.getStartDate().toString() : null);
+            m.put("endDate", r.getEndDate() != null ? r.getEndDate().toString() : null);
             m.put("expertise", r.getExpertise());
             m.put("scheduledVenue", r.getScheduledVenue());
             m.put("meetingLink", r.getMeetingLink());
@@ -136,7 +138,11 @@ public class InterviewerDashboardController {
             m.put("skills", a.getStudent().getSkills());
             m.put("projects", a.getStudent().getProjects());
             m.put("profilePhotoUrl", a.getStudent().getProfilePhotoUrl());
-            m.put("evaluationSubmitted", evaluationRepository.existsByApplicationId(a.getId()));
+            var evalOpt = evaluationRepository.findByApplicationId(a.getId());
+            m.put("evaluationSubmitted", evalOpt.isPresent());
+            if (evalOpt.isPresent()) {
+                m.put("overallScore", evalOpt.get().getOverallScore());
+            }
             // ── NEW: include video URL if a video has been uploaded for this student ──
             String videoUrl = a.getVideoUrl();
             m.put("videoUrl", (videoUrl != null && !videoUrl.isBlank())
