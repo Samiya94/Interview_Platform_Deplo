@@ -163,7 +163,7 @@
   /* MODALS */
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(3px);padding:16px;}
   .modal-overlay.open{display:flex;}
-  .modal{background:var(--card);padding:24px;border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;overflow-x:hidden;animation:fadeUp .25s ease;box-shadow:var(--shadow-lg);}
+  .modal{background:var(--card);padding:24px;border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:fadeUp .25s ease;box-shadow:var(--shadow-lg);}
   .modal.wide{max-width:780px;}
   .modal.xwide{max-width:900px;}
   .modal.narrow{max-width:420px;}

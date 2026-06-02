@@ -1594,7 +1594,7 @@ function openFullProfileModal(d) {
                                         <b style="font-size:12.5px;">${fb.studentName}</b>
                                         <span style="color:#EAB308;font-weight:700;font-size:12px;">★ ${fb.rating}</span>
                                     </div>
-                                    <p style="font-size:12px;color:var(--dark);line-height:1.4;">${fb.feedback || '<i>No feedback text provided.</i>'}</p>
+                                    <p style="font-size:12px;color:var(--dark);line-height:1.4;word-wrap:break-word;word-break:break-word;white-space:pre-wrap;">${fb.feedback || '<i>No feedback text provided.</i>'}</p>
                                 </div>
                             `).join('')}
                         </div>` 
