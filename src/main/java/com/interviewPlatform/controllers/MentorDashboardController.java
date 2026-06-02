@@ -236,7 +236,7 @@ public class MentorDashboardController {
             long comp = applicationRepository.findAll().stream()
                 .filter(a -> a.getStudent() != null && studentIds.contains(a.getStudent().getId())
                     && a.getStatus() == Status.COMPLETED
-                    && a.getUpdatedAt() != null && a.getUpdatedAt().isAfter(start) && a.getUpdatedAt().isBefore(end))
+                    && a.getAppliedAt() != null && a.getAppliedAt().isAfter(start) && a.getAppliedAt().isBefore(end))
                 .count();
                 
             long sched = applicationRepository.findAll().stream()
