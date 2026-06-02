@@ -753,8 +753,8 @@ async function openStudentModal(idx, fromToday) {
 
   document.getElementById('modalStudentName').textContent = s.name;
   document.getElementById('modalStudentMeta').innerHTML =
-      `<span><i class="fa-solid fa-graduation-cap" style="color:var(--secondary);margin-right:4px;"></i>${s.className}</span>` +
-      `<span><i class="fa-solid fa-envelope" style="color:var(--secondary);margin-right:4px;"></i>${s.email || '—'}</span>`;
+      `<span><i class="fa-solid fa-building-columns" style="color:var(--secondary);margin-right:4px;"></i>${s.institute}</span>` +
+      `<span><i class="fa-solid fa-briefcase" style="color:var(--secondary);margin-right:4px;"></i>${s.domain}</span>`;
 
   if (s.profilePhotoUrl && s.profilePhotoUrl !== 'null' && s.profilePhotoUrl.trim() !== '') {
       let url = s.profilePhotoUrl.startsWith('http') || s.profilePhotoUrl.startsWith('/') ? s.profilePhotoUrl : '/' + s.profilePhotoUrl;
@@ -765,7 +765,7 @@ async function openStudentModal(idx, fromToday) {
               </div>
               <div>
                   <div style="font-size:16px;font-weight:800;color:#fff;">${s.name}</div>
-                  <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${s.className}</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${s.institute} · ${s.domain}</div>
               </div>
           </div>`;
   } else {
@@ -774,31 +774,28 @@ async function openStudentModal(idx, fromToday) {
               <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">${s.initials}</div>
               <div>
                   <div style="font-size:16px;font-weight:800;color:#fff;">${s.name}</div>
-                  <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${s.className}</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">${s.institute} · ${s.domain}</div>
               </div>
           </div>`;
   }
 
   // OVERVIEW
-  document.getElementById('modalDomain').textContent = s.domain;
+  document.getElementById('modalOverallScore').textContent = '—'; // Set initially, updated after feedback fetch
   document.getElementById('modalClass').textContent = s.className;
   document.getElementById('modalSlot').textContent = s.scheduledText;
   
-  if (s.overallScore != null) {
-      const perf = s.overallScore >= 8 ? 'Excellent' : s.overallScore >= 6 ? 'Good' : 'Needs Work';
-      const c = s.overallScore >= 8 ? 'success' : s.overallScore >= 6 ? 'info' : 'warning';
-      document.getElementById('modalPerfBadge').innerHTML = `<span class="badge bg-${c}">${perf}</span>`;
+  // Interest (Skills)
+  const interestContainer = document.getElementById('modalInterest');
+  if (s.skills && s.skills.length > 0) {
+      interestContainer.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">` + 
+          s.skills.map(skill => `<span class="badge bg-blue" style="border-radius:20px;padding:3px 8px;font-size:11px;font-weight:600;">${skill}</span>`).join('') + `</div>`;
   } else {
-      document.getElementById('modalPerfBadge').innerHTML = `<span class="badge bg-neutral">Pending</span>`;
+      interestContainer.innerHTML = '<span style="color:var(--muted);font-size:12px;">—</span>';
   }
 
-  // Skills
-  const skillsContainer = document.getElementById('modalSkills');
-  if (s.skills && s.skills.length > 0) {
-      skillsContainer.innerHTML = `<div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Skills</div><div style="display:flex;flex-wrap:wrap;gap:6px;">` + 
-          s.skills.map(skill => `<span class="badge bg-blue" style="border-radius:20px;padding:4px 10px;font-size:11.5px;font-weight:600;">${skill}</span>`).join('') + `</div>`;
-  } else {
-      skillsContainer.innerHTML = '';
+  const oldSkillsContainer = document.getElementById('modalSkills');
+  if (oldSkillsContainer) {
+      oldSkillsContainer.innerHTML = '';
   }
 
   // Projects
@@ -818,7 +815,7 @@ async function openStudentModal(idx, fromToday) {
   if (s.resumeUrl) {
       const isPdf = s.resumeUrl.toLowerCase().endsWith('.pdf');
       if (isPdf) {
-          resumeContainer.innerHTML = `<iframe src="${s.resumeUrl}" style="width:100%;height:450px;border:none;border-radius:var(--r);"></iframe>`;
+          resumeContainer.innerHTML = `<iframe src="${s.resumeUrl}" style="width:100%;height:75vh;border:none;border-radius:var(--r);"></iframe>`;
       } else {
           resumeContainer.innerHTML = `<div style="text-align:center;padding:40px 20px;background:#F8FAFC;border-radius:var(--r);">
               <i class="fa-solid fa-file-word" style="font-size:2.5rem;color:#2563EB;margin-bottom:12px;opacity:0.8;"></i>
@@ -842,6 +839,14 @@ async function openStudentModal(idx, fromToday) {
           if (res && res.ok) {
               const reports = await res.json();
               const completed = reports.filter(r => r.evaluation);
+              
+              if (completed.length) {
+                  const scores = completed.map(r => r.evaluation.overallScore).filter(score => score != null);
+                  if (scores.length) {
+                      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                      document.getElementById('modalOverallScore').innerHTML = `<span style="font-size:14px;color:var(--primary);">${avg.toFixed(1)}</span><span style="font-size:11px;color:var(--muted);font-weight:500;">/10</span>`;
+                  }
+              }
               
               if (!completed.length) {
                   feedbackContainer.innerHTML = `<p style="color:var(--muted);font-size:13px;">No feedback available yet (0 completed reports out of ${reports.length} total applications).</p>`;
@@ -874,44 +879,11 @@ async function openStudentModal(idx, fromToday) {
           }
       } catch (e) {
           console.error("Failed to fetch all reports:", e);
+          feedbackContainer.innerHTML = `<p style="color:var(--danger);font-size:13px;">Error loading feedback. Please ensure the server is updated and try again.</p>`;
       }
+  } else {
+      feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No feedback available (Missing Student ID).</p>';
   }
-
-  // Fallback if studentId is missing or API failed (fetch current application only)
-  if (s.applicationId) {
-      try {
-          const res = await secureFetch(`/api/interviewer/applications/${s.applicationId}/evaluation`);
-          if (res && res.ok) {
-              const evalData = await res.json();
-              if (evalData && evalData.overallScore != null) {
-                  feedbackContainer.innerHTML = `
-                    <div style="display:flex;flex-direction:column;gap:12px;">
-                        <div style="background:#F8FAFC;padding:12px;border-radius:8px;border-left:3px solid var(--primary);">
-                            <div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:700;">Overall Score</div>
-                            <div style="font-size:18px;font-weight:800;">${evalData.overallScore.toFixed(1)} <span style="font-size:12px;color:var(--muted);font-weight:500;">/ 10</span></div>
-                        </div>
-                        <div style="background:#F0FDF4;padding:12px;border-radius:8px;border-left:3px solid var(--success);">
-                            <div style="font-size:10px;text-transform:uppercase;color:var(--success);margin-bottom:4px;font-weight:700;">Strengths</div>
-                            <div style="font-size:13px;">${evalData.strengths || 'None specified'}</div>
-                        </div>
-                        <div style="background:#FFFBEB;padding:12px;border-radius:8px;border-left:3px solid var(--warning);">
-                            <div style="font-size:10px;text-transform:uppercase;color:#B45309;margin-bottom:4px;font-weight:700;">Areas for Improvement</div>
-                            <div style="font-size:13px;">${evalData.improvements || 'None specified'}</div>
-                        </div>
-                        <div style="background:#EFF6FF;padding:12px;border-radius:8px;border-left:3px solid var(--info);">
-                            <div style="font-size:10px;text-transform:uppercase;color:var(--info);margin-bottom:4px;font-weight:700;">Remarks</div>
-                            <div style="font-size:13px;">${evalData.remarks || 'None specified'}</div>
-                        </div>
-                    </div>
-                  `;
-                  return;
-              }
-          }
-      } catch(e) {
-          console.error("Failed to fetch application evaluation:", e);
-      }
-  }
-  feedbackContainer.innerHTML = '<p style="color:var(--muted);font-size:13px;">No feedback available yet.</p>';
 }
 
 function updateHistCount() { const cards = document.querySelectorAll('#historyList .history-card'); let v = 0; cards.forEach(c => { if (c.style.display !== 'none') v++; }); setText('histCount', `${v} record${v !== 1 ? 's' : ''}`); }
