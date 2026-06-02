@@ -986,7 +986,7 @@ async function applyFilters(){
 
     const showConfirm = (normalized === 'AWAITING_CONFIRMATION') && !d.instituteConfirmed;
     const showRescheduleDecision = (normalized === 'RESCHEDULED') && !d.instituteConfirmed;
-    const showViewDetails = (normalized === 'CONFIRMED') && d.instituteConfirmed;
+    const showViewDetails = (normalized === 'CONFIRMED' && d.instituteConfirmed) || normalized === 'COMPLETED';
 
     const actionCell = showConfirm
       ? `<button class="btn btn-s btn-sm" onclick="promptConfirmRequest(${d.id},'${deptName.replace(/'/g,"\\'")}')">
@@ -2004,7 +2004,7 @@ function openInterviewViewModal(requestId) {
   }
   const instName = (dashboardState.institute && dashboardState.institute.name) ? dashboardState.institute.name : (iv.instituteName ? iv.instituteName : '—');
   const domain = (iv.expertise && iv.expertise.length > 0) ? iv.expertise.join(', ') : '—';
-  const reqStudents = iv.numberOfStudentsRequired || '—';
+  const reqStudents = iv.registeredStudentsCount || '0';
 
   const modalHtml = `
     <div class="modal-overlay open" id="ivViewModal" style="backdrop-filter: blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999;" onclick="if(event.target===this)document.getElementById('ivViewModal').remove()">
@@ -2044,7 +2044,7 @@ function openInterviewViewModal(requestId) {
             <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${venue}</div>
           </div>
           <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Students Required</div>
+            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Students Applied</div>
             <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${reqStudents}</div>
           </div>
         </div>
@@ -2068,7 +2068,6 @@ async function renderAll(){
   renderDeptCheckboxes();
   renderReqStats();
   renderReqTable();
-  renderDeptChart();
 }
 
 /* ═══════════════ INIT ═══════════════ */
