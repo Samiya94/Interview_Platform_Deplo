@@ -1318,6 +1318,11 @@ function confirmStatus(){
   if (_pendingInstituteAction) {
     const { id, type } = _pendingInstituteAction;
     _pendingInstituteAction = null;
+    const modalEl = document.querySelector('#statusModal .modal');
+    if(modalEl) {
+      modalEl.classList.add('narrow');
+      modalEl.style.maxWidth = '';
+    }
     closeOverlay('statusModal');
     if (type === 'confirm-slot') return confirmInstituteRequest(id);
     if (type === 'confirm-reschedule') return confirmRescheduledRequest(id);
@@ -1327,113 +1332,115 @@ function confirmStatus(){
   if(_pendDropdown) _pendDropdown.dataset.previous=_newStatus;
   if(_pendStatus){ setStatus(_pendStatus,_newStatus); renderReqTable(); renderOverview(); renderReqStats(); }
   _pendStatus=null; _pendDropdown=null;
+  const modalEl = document.querySelector('#statusModal .modal');
+  if(modalEl) {
+    modalEl.classList.add('narrow');
+    modalEl.style.maxWidth = '';
+  }
   closeOverlay('statusModal');
 }
 function cancelStatus(){
   _pendingInstituteAction = null;
   if(_pendDropdown) _pendDropdown.value=_prevStatus;
   _pendStatus=null; _pendDropdown=null;
+  const modalEl = document.querySelector('#statusModal .modal');
+  if(modalEl) {
+    modalEl.classList.add('narrow');
+    modalEl.style.maxWidth = '';
+  }
   closeOverlay('statusModal');
+}
+
+function generateInterviewDetailsGrid(iv) {
+  if (!iv) return '';
+  const deptName = iv.departmentName || '—';
+  const interviewers = (iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : '—';
+  const venue = (dashboardState.institute && dashboardState.institute.address) ? dashboardState.institute.address : (iv.instituteAddress ? iv.instituteAddress : '—');
+  let dateObj = iv.scheduledDate || iv.startDate;
+  let dateStr = '—';
+  let timeStr = '—';
+  if (dateObj) {
+    const d = new Date(dateObj);
+    dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+  const instName = (dashboardState.institute && dashboardState.institute.name) ? dashboardState.institute.name : (iv.instituteName ? iv.instituteName : '—');
+  const domain = (iv.expertise && iv.expertise.length > 0) ? iv.expertise.join(', ') : '—';
+  const reqStudents = iv.registeredStudentsCount || '0';
+
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;align-items:stretch;text-align:left;">
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Institute</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${instName}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Department</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${deptName}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Interviewers</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${interviewers}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Domain</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${domain}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Date</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${dateStr}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Time</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${timeStr}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Venue</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${venue}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
+        <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Students Applied</div>
+        <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${reqStudents}</div>
+      </div>
+    </div>`;
 }
 
 function promptConfirmRequest(requestId, deptName) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
-  const slot = iv ? formatInterviewSlot(iv) : 'Not available';
-  const interviewers = (iv && iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
-  const venue = (iv && iv.scheduledVenue) ? iv.scheduledVenue : (iv && iv.meetingLink ? iv.meetingLink : 'Online / TBD');
-
   _pendingInstituteAction = { id: requestId, type: 'confirm-slot' };
-  document.getElementById('statusModalTitle').textContent = 'Confirm Interview Slot';
-  document.getElementById('statusModalText').innerHTML = `
-    <div style="text-align:left;margin-bottom:14px;">
-      <div style="display:grid;gap:10px;">
-        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#15803D;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-sitemap" style="font-size:10px;"></i> Department
-          </div>
-          <div style="font-weight:700;font-size:14px;color:#1F2937;">${deptName}</div>
-        </div>
-        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1D4ED8;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-calendar-check" style="font-size:10px;"></i> Scheduled Slot
-          </div>
-          <div style="font-weight:700;font-size:14px;color:#1F2937;">${slot}</div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);height:100%;">
-            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-              <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
-            </div>
-            <div style="font-weight:700;font-size:13px;color:#1F2937;word-break:break-word;">${interviewers}</div>
-          </div>
-          <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);height:100%;">
-            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-              <i class="fa-solid fa-location-dot" style="font-size:10px;"></i> Venue / Link
-            </div>
-            <div style="font-weight:700;font-size:13px;color:#1F2937;word-break:break-word;">${venue}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p style="font-size:13px;color:#6B7280;">Are you sure you want to confirm this interview slot?</p>`;
+  
+  const modalEl = document.querySelector('#statusModal .modal');
+  if(modalEl) { modalEl.classList.remove('narrow'); modalEl.style.maxWidth = '650px'; }
+
+  document.getElementById('statusModalTitle').innerHTML = '<i class="fa-solid fa-calendar-check" style="color:var(--success);margin-right:8px;"></i> Confirm Interview Slot';
+  document.getElementById('statusModalText').innerHTML = generateInterviewDetailsGrid(iv) + 
+    '<p style="font-size:14px;color:#374151;font-weight:600;margin-top:10px;">Are you sure you want to confirm this interview slot?</p>';
   openOverlay('statusModal');
 }
 
 function promptConfirmRescheduleRequest(requestId, deptName) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
-  const slot = iv ? formatInterviewSlot(iv) : 'Not available';
-  const interviewers = (iv && iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
-
   _pendingInstituteAction = { id: requestId, type: 'confirm-reschedule' };
-  document.getElementById('statusModalTitle').textContent = 'Confirm Rescheduled Interview';
-  document.getElementById('statusModalText').innerHTML = `
-    <div style="text-align:left;margin-bottom:14px;">
-      <div style="display:grid;gap:10px;">
-        <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6D28D9;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-rotate" style="font-size:10px;"></i> Rescheduled Slot
-          </div>
-          <div style="font-weight:800;font-size:14px;color:#1F2937;">${slot}</div>
-          <div style="font-weight:700;font-size:12.5px;color:#6B7280;margin-top:3px;">${deptName}</div>
-        </div>
-        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
-          </div>
-          <div style="font-weight:700;font-size:13px;color:#1F2937;">${interviewers}</div>
-        </div>
-      </div>
-    </div>
-    <p style="font-size:13px;color:#6B7280;">Confirm this rescheduled interview slot?</p>`;
+  
+  const modalEl = document.querySelector('#statusModal .modal');
+  if(modalEl) { modalEl.classList.remove('narrow'); modalEl.style.maxWidth = '650px'; }
+
+  document.getElementById('statusModalTitle').innerHTML = '<i class="fa-solid fa-rotate" style="color:var(--primary);margin-right:8px;"></i> Confirm Rescheduled Interview';
+  document.getElementById('statusModalText').innerHTML = generateInterviewDetailsGrid(iv) + 
+    '<p style="font-size:14px;color:#374151;font-weight:600;margin-top:10px;">Confirm this rescheduled interview slot?</p>';
   openOverlay('statusModal');
 }
 
 function promptRejectRescheduleRequest(requestId, deptName) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
-  const slot = iv ? formatInterviewSlot(iv) : 'Not available';
-  const interviewers = (iv && iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : 'Not Assigned Yet';
-
   _pendingInstituteAction = { id: requestId, type: 'reject-reschedule' };
-  document.getElementById('statusModalTitle').textContent = 'Reject Rescheduled Interview';
-  document.getElementById('statusModalText').innerHTML = `
-    <div style="text-align:left;margin-bottom:14px;">
-      <div style="display:grid;gap:10px;">
-        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B91C1C;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size:10px;"></i> Reject Reschedule
-          </div>
-          <div style="font-weight:800;font-size:14px;color:#1F2937;">${slot}</div>
-          <div style="font-weight:700;font-size:12.5px;color:#6B7280;margin-top:3px;">${deptName}</div>
-        </div>
-        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:3px;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-user-tie" style="font-size:10px;"></i> Interviewers
-          </div>
-          <div style="font-weight:700;font-size:13px;color:#1F2937;">${interviewers}</div>
-        </div>
-      </div>
-    </div>
-    <p style="font-size:13px;color:#6B7280;">Rejecting will mark this request as <b>Rejected</b>.</p>`;
+  
+  const modalEl = document.querySelector('#statusModal .modal');
+  if(modalEl) { modalEl.classList.remove('narrow'); modalEl.style.maxWidth = '650px'; }
+
+  document.getElementById('statusModalTitle').innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);margin-right:8px;"></i> Reject Rescheduled Interview';
+  document.getElementById('statusModalText').innerHTML = generateInterviewDetailsGrid(iv) + 
+    '<p style="font-size:14px;color:#374151;font-weight:600;margin-top:10px;">Rejecting will mark this request as <b>Rejected</b>.</p>';
   openOverlay('statusModal');
 }
 
@@ -1992,21 +1999,6 @@ async function loadDeptStudents(deptId, containerId) {
 function openInterviewViewModal(requestId) {
   const iv = (dashboardState.interviews||[]).find(i => i.id === requestId);
   if (!iv) return;
-  const deptName = iv.departmentName || '—';
-  const interviewers = (iv.assignedInterviewerNames && iv.assignedInterviewerNames.length > 0) ? iv.assignedInterviewerNames.join(', ') : '—';
-  const venue = (dashboardState.institute && dashboardState.institute.address) ? dashboardState.institute.address : (iv.instituteAddress ? iv.instituteAddress : '—');
-  
-  let dateObj = iv.scheduledDate || iv.startDate;
-  let dateStr = '—';
-  let timeStr = '—';
-  if (dateObj) {
-    const d = new Date(dateObj);
-    dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-    timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  }
-  const instName = (dashboardState.institute && dashboardState.institute.name) ? dashboardState.institute.name : (iv.instituteName ? iv.instituteName : '—');
-  const domain = (iv.expertise && iv.expertise.length > 0) ? iv.expertise.join(', ') : '—';
-  const reqStudents = iv.registeredStudentsCount || '0';
 
   const modalHtml = `
     <div class="modal-overlay open" id="ivViewModal" style="backdrop-filter: blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999;" onclick="if(event.target===this)document.getElementById('ivViewModal').remove()">
@@ -2016,40 +2008,7 @@ function openInterviewViewModal(requestId) {
           <button onclick="document.getElementById('ivViewModal').remove()" style="background:none;border:none;font-size:20px;color:#6B7280;cursor:pointer;display:grid;place-items:center;padding:5px;"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;align-items:stretch;">
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Institute</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${instName}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Department</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${deptName}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Interviewers</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${interviewers}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Domain</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${domain}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Date</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${dateStr}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Time</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${timeStr}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Venue</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${venue}</div>
-          </div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:16px;height:100%;word-break:break-word;">
-            <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">Students Applied</div>
-            <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.4;">${reqStudents}</div>
-          </div>
-        </div>
+        ${generateInterviewDetailsGrid(iv)}
 
         <button onclick="document.getElementById('ivViewModal').remove()" style="width:100%;background:#1E3A8A;color:#fff;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:15px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1E3A8A'">
           Close
