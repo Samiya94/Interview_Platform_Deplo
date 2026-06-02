@@ -1725,9 +1725,9 @@ async function openInstStudentDetail(id, name, cls, email, skills, phone, deptNa
           ${score}
         </div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:6px;"><i class="fa-solid fa-user" style="margin-right:4px;"></i>${r.interviewerName || '—'}</div>
-        ${ev.strengths    ? `<div style="font-size:13px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;"><b style="color:var(--success);">Strengths:</b> ${ev.strengths}</div>` : ''}
-        ${ev.improvements ? `<div style="font-size:13px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;"><b style="color:#D97706;">Improvements:</b> ${ev.improvements}</div>` : ''}
-        ${ev.remarks      ? `<div style="font-size:13px;white-space:pre-wrap;word-break:break-word;"><b style="color:var(--muted);">Remarks:</b> ${ev.remarks}</div>` : ''}
+        ${ev.strengths ? `<div style="background:#DCFCE7;padding:10px;border-radius:6px;font-size:13px;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;"><b style="color:#166534;display:block;margin-bottom:4px;">Strengths:</b><span style="color:#15803D;">${ev.strengths}</span></div>` : ''}
+        ${ev.improvements ? `<div style="background:#FEF3C7;padding:10px;border-radius:6px;font-size:13px;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;"><b style="color:#92400E;display:block;margin-bottom:4px;">Improvements:</b><span style="color:#B45309;">${ev.improvements}</span></div>` : ''}
+        ${ev.remarks ? `<div style="background:#E0E7FF;padding:10px;border-radius:6px;font-size:13px;white-space:pre-wrap;word-break:break-word;"><b style="color:#3730A3;display:block;margin-bottom:4px;">Remarks:</b><span style="color:#4338CA;font-weight:500;">${ev.remarks}</span></div>` : ''}
       </div>`;
     }).join('');
   }
