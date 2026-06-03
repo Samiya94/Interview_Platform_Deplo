@@ -257,3 +257,28 @@
     .form-row-2{grid-template-columns:1fr!important;}
     .profile-grid{grid-template-columns:1fr!important;}
   }
+
+  /* Dashboard Horizontal Scroll for Slots */
+  #dashSlots {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 14px;
+    padding-bottom: 12px;
+  }
+  #dashSlots::-webkit-scrollbar {
+    height: 6px;
+  }
+  #dashSlots::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  #dashSlots::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+  }
+  #dashSlots > .apply-card {
+    min-width: 260px;
+    flex: 0 0 auto;
+  }
